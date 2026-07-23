@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RallySight — Storage Dashboard</title>
+<title>RallySight — Business Process Map</title>
 <style>
   :root{
     --purple:#7c3aed; --purple-light:#ede9fe;
@@ -23,820 +23,763 @@
   body{margin:0;background:var(--bg);color:var(--slate-900);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;}
   a{color:inherit;}
+  svg{display:block;}
 
   /* Nav */
-  .topnav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  .topnav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
     border-bottom:1px solid var(--slate-200);}
-  .nav-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;
-    padding:14px 24px;gap:16px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;letter-spacing:-.2px;}
+  .nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:6px;
+    padding:0 24px;overflow-x:auto;}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;letter-spacing:-.2px;
+    padding:14px 14px 14px 0;white-space:nowrap;}
   .brand-dot{width:11px;height:11px;border-radius:50%;background:var(--purple);box-shadow:0 0 0 4px var(--purple-light);}
-  .nav-pills{display:flex;gap:4px;background:var(--slate-100);padding:4px;border-radius:999px;}
-  .pill{border:none;background:transparent;padding:8px 18px;border-radius:999px;font-size:14px;font-weight:600;
-    color:var(--slate-700);cursor:pointer;transition:.15s;white-space:nowrap;}
-  .pill:hover{color:var(--purple);}
-  .pill.active{background:var(--purple);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.35);}
-  .live-tag{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--slate-500);}
-  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite;}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.55);}70%{box-shadow:0 0 0 7px rgba(16,185,129,0);}100%{box-shadow:0 0 0 0 rgba(16,185,129,0);}}
+  .navtab{border:none;background:transparent;padding:10px 16px;border-radius:999px;font-size:13.5px;font-weight:700;
+    color:var(--slate-700);cursor:pointer;transition:.15s;white-space:nowrap;margin:8px 0;}
+  .navtab:hover{color:var(--purple);background:var(--slate-100);}
+  .navtab.active{background:var(--purple);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.35);}
+  .navtab.disabled{color:var(--slate-300);cursor:not-allowed;}
+  .navtab.disabled:hover{background:transparent;color:var(--slate-300);}
+  .nav-spacer{flex:1;}
+  .storage-btn{border:none;background:var(--slate-100);color:var(--slate-700);width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:6px;}
+  .storage-btn:hover{background:var(--slate-200);}
+
+  .container{max-width:1240px;margin:0 auto;padding:0 24px 90px;}
+  .tabpage{display:none;}
+  .tabpage.active{display:block;}
 
   /* Hero */
-  .hero{max-width:1180px;margin:0 auto;padding:56px 24px 8px;text-align:center;}
-  .badge{display:inline-block;background:var(--purple-light);color:var(--purple);font-weight:700;font-size:13px;
-    padding:6px 16px;border-radius:999px;margin-bottom:18px;}
-  .hero h1{font-size:40px;margin:0 0 12px;letter-spacing:-1px;font-weight:800;}
-  .hero p{color:var(--slate-500);font-size:16px;max-width:560px;margin:0 auto;line-height:1.55;}
+  .hero{max-width:900px;margin:0 auto;padding:44px 24px 6px;text-align:center;}
+  .badge{display:inline-block;background:var(--purple-light);color:var(--purple);font-weight:700;font-size:12.5px;
+    padding:6px 16px;border-radius:999px;margin-bottom:16px;}
+  .hero h1{font-size:34px;margin:0 0 10px;letter-spacing:-1px;font-weight:800;}
+  .hero p{color:var(--slate-500);font-size:15px;max-width:600px;margin:0 auto;line-height:1.55;}
 
-  .container{max-width:1180px;margin:0 auto;padding:36px 24px 80px;}
+  .section{margin:40px 0;}
+  .section-head{display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+  .section-bar{width:5px;height:20px;border-radius:3px;background:var(--purple);}
+  .section-head h2{font-size:18px;margin:0;font-weight:800;}
 
-  /* Section headers */
-  .section-head{display:flex;align-items:center;gap:10px;margin:0 0 18px;}
-  .section-bar{width:5px;height:22px;border-radius:3px;background:var(--purple);}
-  .section-head h2{font-size:20px;margin:0;font-weight:800;}
-
-  section.block{margin-bottom:52px;scroll-margin-top:90px;}
-
-  /* Stat cards */
-  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
-  .stat-card{background:var(--card);border:1px solid var(--slate-200);border-radius:var(--radius);padding:20px;
-    box-shadow:var(--shadow);}
-  .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-  .stat-num{font-size:26px;font-weight:800;letter-spacing:-.5px;}
-  .stat-label{color:var(--slate-500);font-size:13px;font-weight:600;margin-top:2px;}
-
-  /* Panel / file manager card */
   .panel{background:var(--card);border:1px solid var(--slate-200);border-radius:20px;box-shadow:var(--shadow);padding:22px;}
-  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-  .breadcrumb{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--slate-500);flex:1;min-width:180px;flex-wrap:wrap;}
-  .breadcrumb span.crumb{cursor:pointer;padding:4px 8px;border-radius:8px;}
-  .breadcrumb span.crumb:hover{background:var(--slate-100);color:var(--purple);}
-  .breadcrumb span.crumb.current{color:var(--slate-900);}
-  .breadcrumb .sep{color:var(--slate-300);}
 
-  .search-box{position:relative;}
-  .search-box input{padding:9px 14px 9px 34px;border:1px solid var(--slate-200);border-radius:10px;font-size:13.5px;
-    width:210px;background:var(--slate-100);outline:none;transition:.15s;}
-  .search-box input:focus{background:#fff;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-light);}
-  .search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--slate-500);}
+  /* Org chart */
+  .org-wrap{overflow-x:auto;padding:6px;}
+  .org-tree{display:flex;flex-direction:column;align-items:center;gap:0;min-width:600px;}
+  .org-row{display:flex;justify-content:center;gap:36px;position:relative;}
+  .org-children{display:flex;flex-direction:column;align-items:center;}
+  .org-node{border:1.5px solid; border-radius:12px;padding:10px 16px;background:#fff;text-align:center;min-width:130px;
+    font-size:12.5px;font-weight:800;margin:8px 6px;position:relative;}
+  .org-node .sub{font-weight:500;color:var(--slate-500);font-size:11px;margin-top:2px;}
+  .org-connector{width:2px;background:var(--slate-300);height:18px;margin:0 auto;}
+  .org-hbar{height:2px;background:var(--slate-300);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--slate-200);}
+  .legend-chip{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--slate-700);}
+  .legend-dot{width:11px;height:11px;border-radius:4px;}
 
+  /* Info cards (sources/components/streams/channels) */
+  .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .info-card{border:1px solid var(--slate-200);border-radius:14px;padding:16px;background:#fff;}
+  .info-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-weight:800;font-size:12px;}
+  .info-card h4{margin:0 0 3px;font-size:13.5px;}
+  .info-card p{margin:0 0 8px;font-size:12px;color:var(--slate-500);}
+  .info-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;}
+
+  /* Branch cards (documents) */
+  .branch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .branch-card{border:1px solid var(--slate-200);border-radius:16px;background:#fff;overflow:hidden;transition:.15s;}
+  .branch-card:hover{box-shadow:var(--shadow-lg);}
+  .branch-head{display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer;}
+  .branch-chip{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:12.5px;flex-shrink:0;}
+  .branch-info{flex:1;min-width:0;}
+  .branch-info h4{margin:0 0 4px;font-size:14px;}
+  .branch-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;margin-right:6px;}
+  .branch-doc-count{font-size:11px;color:var(--slate-500);font-weight:600;}
+  .branch-chevron{transition:.2s;color:var(--slate-500);flex-shrink:0;}
+  .branch-card.open .branch-chevron{transform:rotate(180deg);}
+  .branch-body{display:none;border-top:1px solid var(--slate-200);padding:16px;background:var(--slate-100);}
+  .branch-card.open .branch-body{display:block;}
+
+  /* Document mini-manager (reused inside branch body) */
+  .doc-dropzone{border:2px dashed var(--slate-300);border-radius:12px;padding:16px;text-align:center;cursor:pointer;
+    background:#fff;margin-bottom:12px;transition:.15s;}
+  .doc-dropzone.drag{border-color:var(--purple);background:var(--purple-light);}
+  .doc-dropzone span{font-size:12px;color:var(--slate-500);font-weight:600;}
+  .doc-list{display:flex;flex-direction:column;gap:8px;}
+  .doc-row{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:9px 11px;}
+  .doc-chip{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;}
+  .doc-row .flex1{flex:1;min-width:0;}
+  .doc-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .doc-meta{font-size:10.5px;color:var(--slate-500);}
+  .doc-actions{display:flex;gap:4px;}
+  .mini-btn{width:26px;height:26px;border-radius:7px;border:none;background:var(--slate-100);color:var(--slate-500);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .mini-btn:hover{background:var(--slate-200);color:var(--slate-900);}
+  .doc-empty{font-size:12px;color:var(--slate-500);text-align:center;padding:10px;}
+
+  /* Workflow */
+  .workflow-wrap{overflow-x:auto;padding:8px 4px;}
+  .workflow-row{display:flex;gap:10px;min-width:max-content;}
+  .wf-step{width:150px;flex-shrink:0;text-align:center;position:relative;}
+  .wf-num{width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;font-weight:800;font-size:13px;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+  .wf-step h5{margin:0 0 3px;font-size:12.5px;}
+  .wf-step p{margin:0;font-size:11px;color:var(--slate-500);}
+  .wf-arrow{color:var(--slate-300);display:flex;align-items:center;flex-shrink:0;}
+
+  /* KPI grid */
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .kpi-card{border:1px solid var(--slate-200);border-radius:14px;padding:14px;background:#fff;}
+  .kpi-trend{font-size:11px;font-weight:800;margin-bottom:6px;display:inline-block;padding:2px 7px;border-radius:999px;}
+  .kpi-trend.up{color:#059669;background:var(--green-light);}
+  .kpi-trend.down{color:#b91c1c;background:var(--red-light);}
+  .kpi-trend.flat{color:var(--slate-500);background:var(--slate-100);}
+  .kpi-value{font-size:20px;font-weight:800;letter-spacing:-.4px;}
+  .kpi-label{font-size:11.5px;font-weight:700;margin-top:4px;}
+  .kpi-target{font-size:10.5px;color:var(--slate-500);margin-top:2px;}
+
+  /* Storage summary strip */
+  .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:8px;}
+  .stat-card{background:var(--card);border:1px solid var(--slate-200);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+  .stat-num{font-size:21px;font-weight:800;letter-spacing:-.4px;}
+  .stat-label{color:var(--slate-500);font-size:12px;font-weight:600;margin-top:2px;}
+
+  .empty-note{padding:40px 20px;text-align:center;color:var(--slate-500);font-size:13.5px;}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;
+    z-index:100;opacity:0;pointer-events:none;transition:.15s;padding:20px;}
+  .modal-overlay.show{opacity:1;pointer-events:auto;}
+  .modal-box{background:#fff;border-radius:16px;padding:22px;width:420px;max-width:92vw;box-shadow:var(--shadow-lg);
+    transform:translateY(10px);transition:.15s;max-height:86vh;overflow:auto;}
+  .modal-overlay.show .modal-box{transform:translateY(0);}
+  .modal-box h3{margin:0 0 14px;font-size:16px;}
+  .modal-box input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;
+    font-size:14px;outline:none;margin-bottom:16px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;}
   .btn{border:none;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;
-    display:inline-flex;align-items:center;gap:6px;transition:.15s;}
-  .btn-primary{background:var(--purple);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.3);}
+    display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--purple);color:#fff;}
   .btn-primary:hover{background:#6d28d9;}
   .btn-ghost{background:var(--slate-100);color:var(--slate-700);}
   .btn-ghost:hover{background:var(--slate-200);}
   .btn-danger{background:var(--red-light);color:#b91c1c;}
   .btn-danger:hover{background:#fecaca;}
-  .icon-btn{width:30px;height:30px;border-radius:8px;border:none;background:var(--slate-100);color:var(--slate-500);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .icon-btn:hover{background:var(--slate-200);color:var(--slate-900);}
-  .icon-btn.active{background:var(--purple);color:#fff;}
-  .view-toggle{display:flex;gap:4px;background:var(--slate-100);padding:3px;border-radius:10px;}
-
-  /* Dropzone */
-  .dropzone{border:2px dashed var(--slate-300);border-radius:16px;padding:26px;text-align:center;margin-bottom:18px;
-    transition:.15s;cursor:pointer;background:var(--slate-100);}
-  .dropzone.drag{border-color:var(--purple);background:var(--purple-light);}
-  .dropzone h4{margin:8px 0 2px;font-size:14.5px;}
-  .dropzone p{margin:0;color:var(--slate-500);font-size:12.5px;}
-
-  /* Grid of items */
-  .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;}
-  .item-card{position:relative;border:1px solid var(--slate-200);border-radius:14px;padding:14px 12px;background:#fff;
-    cursor:pointer;transition:.15s;text-align:left;}
-  .item-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-color:var(--slate-300);}
-  .item-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-    font-size:11px;font-weight:800;margin-bottom:10px;}
-  .item-name{font-size:13px;font-weight:700;word-break:break-word;line-height:1.3;margin-bottom:3px;}
-  .item-meta{font-size:11px;color:var(--slate-500);}
-  .item-actions{position:absolute;top:8px;right:8px;display:none;gap:3px;}
-  .item-card:hover .item-actions{display:flex;}
-  .mini-btn{width:22px;height:22px;border-radius:6px;border:none;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--slate-500);}
-  .mini-btn:hover{color:var(--purple);}
-  .mini-btn.star.on{color:var(--orange);}
-  .empty-state{padding:50px 20px;text-align:center;color:var(--slate-500);}
-  .empty-state svg{opacity:.5;margin-bottom:10px;}
-
-  /* List view */
-  .item-list-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--slate-200);
-    border-radius:12px;margin-bottom:8px;cursor:pointer;background:#fff;}
-  .item-list-row:hover{border-color:var(--purple);}
-  .item-list-row .item-icon{margin:0;width:36px;height:36px;font-size:9.5px;}
-  .item-list-row .flex1{flex:1;min-width:0;}
-  .item-list-row .item-name{margin:0;font-size:13.5px;}
-  .item-list-row .item-actions{position:static;display:flex;}
-
-  /* Activity */
-  .activity-item{display:flex;gap:12px;padding:12px 14px;border-left:3px solid var(--slate-200);background:var(--slate-100);
-    border-radius:0 10px 10px 0;margin-bottom:8px;align-items:flex-start;}
-  .activity-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;}
-  .activity-text{font-size:13.5px;font-weight:600;}
-  .activity-time{font-size:11.5px;color:var(--slate-500);margin-top:2px;}
-
-  /* Settings */
-  .settings-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--slate-200);gap:20px;flex-wrap:wrap;}
+  .modal-close{position:absolute;top:16px;right:16px;background:var(--slate-100);border:none;width:28px;height:28px;
+    border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);}
+  .settings-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--slate-200);gap:16px;}
   .settings-row:last-child{border-bottom:none;}
-  .settings-row h4{margin:0 0 4px;font-size:14.5px;}
-  .settings-row p{margin:0;font-size:12.5px;color:var(--slate-500);max-width:420px;}
-  .progress-track{width:260px;height:9px;background:var(--slate-200);border-radius:99px;overflow:hidden;}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:99px;}
+  .settings-row h4{margin:0 0 3px;font-size:13.5px;}
+  .settings-row p{margin:0;font-size:11.5px;color:var(--slate-500);}
+  .activity-item{display:flex;gap:10px;padding:10px 12px;border-left:3px solid var(--slate-200);background:var(--slate-100);
+    border-radius:0 8px 8px 0;margin-bottom:7px;font-size:12.5px;}
+  .activity-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+  .activity-time{font-size:10.5px;color:var(--slate-500);}
 
-  /* Modal */
-  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;
-    z-index:100;opacity:0;pointer-events:none;transition:.15s;}
-  .modal-overlay.show{opacity:1;pointer-events:auto;}
-  .modal-box{background:#fff;border-radius:16px;padding:22px;width:380px;max-width:90vw;box-shadow:var(--shadow-lg);
-    transform:translateY(10px);transition:.15s;}
-  .modal-overlay.show .modal-box{transform:translateY(0);}
-  .modal-box h3{margin:0 0 14px;font-size:16px;}
-  .modal-box input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;
-    font-size:14px;outline:none;margin-bottom:16px;}
-  .modal-box input[type=text]:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-light);}
-  .modal-actions{display:flex;justify-content:flex-end;gap:8px;}
-  .modal-box.preview{width:640px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;}
-  .preview-body{overflow:auto;flex:1;margin:10px 0 14px;border-radius:10px;background:var(--slate-100);
-    display:flex;align-items:center;justify-content:center;min-height:200px;padding:10px;}
-  .preview-body img{max-width:100%;max-height:60vh;border-radius:8px;}
-  .preview-body pre{white-space:pre-wrap;word-break:break-word;font-size:12.5px;padding:10px;text-align:left;width:100%;}
-  .preview-body iframe{width:100%;height:56vh;border:none;border-radius:8px;background:#fff;}
-
-  /* Toast */
   #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);
     color:#fff;padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;transition:.2s;z-index:200;pointer-events:none;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  @media(max-width:820px){
-    .stats-grid{grid-template-columns:repeat(2,1fr);}
-    .nav-pills{order:3;width:100%;justify-content:center;}
+  @media(max-width:900px){
+    .info-grid{grid-template-columns:repeat(2,1fr);}
+    .branch-grid{grid-template-columns:repeat(2,1fr);}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .stat-strip{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(max-width:560px){
+    .info-grid{grid-template-columns:1fr;}
+    .branch-grid{grid-template-columns:1fr;}
+    .kpi-grid{grid-template-columns:1fr 1fr;}
   }
 </style>
 </head>
 <body>
 
 <nav class="topnav">
-  <div class="nav-inner">
+  <div class="nav-inner" id="navInner">
     <div class="brand"><span class="brand-dot"></span>RallySight</div>
-    <div class="nav-pills">
-      <button class="pill active" data-target="overview">Overview</button>
-      <button class="pill" data-target="files">Files</button>
-      <button class="pill" data-target="activity">Activity</button>
-      <button class="pill" data-target="settings">Settings</button>
-    </div>
-    <div class="live-tag"><span class="live-dot"></span>Live — stored in this browser</div>
+    <button class="navtab disabled" title="Not available in this prototype">Architecture</button>
+    <button class="navtab" data-tab="business-map">Business Map</button>
+    <button class="navtab" data-tab="customer-acquisition">Customer Acquisition</button>
+    <button class="navtab" data-tab="service-delivery">Service Delivery</button>
+    <button class="navtab" data-tab="revenue-billing">Revenue &amp; Billing</button>
+    <button class="navtab" data-tab="customer-support">Customer Support</button>
+    <div class="nav-spacer"></div>
+    <button class="storage-btn" id="storageBtn" title="Storage &amp; activity">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+    </button>
   </div>
 </nav>
 
-<header class="hero">
-  <span class="badge">File Management</span>
-  <h1>Storage Dashboard</h1>
-  <p>Upload, organize, search and preview your files. Everything is saved directly in this browser — real files, real folders, no server, no upload limits imposed by us.</p>
-</header>
-
-<main class="container">
-
-  <section class="block" id="overview">
-    <div class="section-head"><span class="section-bar"></span><h2>Overview</h2></div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--purple-light);color:var(--purple)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
-        </div>
-        <div class="stat-num" id="statFiles">0</div>
-        <div class="stat-label">Total Files</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--blue-light);color:var(--blue)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-        </div>
-        <div class="stat-num" id="statStorage">0 B</div>
-        <div class="stat-label">Storage Used</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--green-light);color:var(--green)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div class="stat-num" id="statFolders">0</div>
-        <div class="stat-label">Folders</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--orange-light);color:var(--orange)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>
-        </div>
-        <div class="stat-num" id="statStarred">0</div>
-        <div class="stat-label">Starred</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="files">
-    <div class="section-head"><span class="section-bar"></span><h2>Files</h2></div>
-    <div class="panel">
-      <div class="toolbar">
-        <div class="breadcrumb" id="breadcrumb"></div>
-        <div class="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="searchInput" placeholder="Search all files...">
-        </div>
-        <div class="view-toggle">
-          <button class="icon-btn active" id="gridBtn" title="Grid view">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          </button>
-          <button class="icon-btn" id="listBtn" title="List view">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          </button>
-        </div>
-        <button class="btn btn-ghost" id="newFolderBtn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6M9 13h6"/><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          New Folder
-        </button>
-        <button class="btn btn-primary" id="uploadBtn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload
-        </button>
-        <input type="file" id="fileInput" multiple hidden>
-      </div>
-
-      <div class="dropzone" id="dropzone">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <h4>Drag &amp; drop files here</h4>
-        <p>or click Upload — files are saved instantly to this browser</p>
-      </div>
-
-      <div id="itemContainer"></div>
-    </div>
-  </section>
-
-  <section class="block" id="activity">
-    <div class="section-head"><span class="section-bar"></span><h2>Recent Activity</h2></div>
-    <div class="panel">
-      <div id="activityContainer"></div>
-    </div>
-  </section>
-
-  <section class="block" id="settings">
-    <div class="section-head"><span class="section-bar"></span><h2>Settings</h2></div>
-    <div class="panel">
-      <div class="settings-row">
-        <div>
-          <h4>Browser storage usage</h4>
-          <p>Estimated total usage against this browser's available quota for this site (includes all local data).</p>
-        </div>
-        <div>
-          <div class="progress-track"><div class="progress-fill" id="quotaFill" style="width:0%"></div></div>
-          <div style="font-size:11.5px;color:var(--slate-500);margin-top:6px;text-align:right" id="quotaLabel">—</div>
-        </div>
-      </div>
-      <div class="settings-row">
-        <div>
-          <h4>Export file inventory</h4>
-          <p>Download a CSV list of every file: name, folder, size and date added.</p>
-        </div>
-        <button class="btn btn-ghost" id="exportBtn">Export CSV</button>
-      </div>
-      <div class="settings-row">
-        <div>
-          <h4>Clear all data</h4>
-          <p>Permanently deletes every file and folder stored by this dashboard in this browser. This cannot be undone.</p>
-        </div>
-        <button class="btn btn-danger" id="clearAllBtn">Clear everything</button>
-      </div>
-    </div>
-  </section>
-
-</main>
+<div id="pages"></div>
 
 <div id="toast"></div>
-
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-box" id="modalBox"></div>
-</div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox" style="position:relative;"></div></div>
+<input type="file" id="fileInput" multiple hidden>
 
 <script>
 (function(){
-  "use strict";
+"use strict";
 
-  /* ---------- IndexedDB layer ---------- */
-  const DB_NAME = "rallysight_storage_db_v1";
-  const DB_VERSION = 1;
-  let db;
+/* ============================== DATA ============================== */
+const COLORS = {
+  purple:{c:"var(--purple)", bg:"var(--purple-light)"},
+  blue:{c:"var(--blue)", bg:"var(--blue-light)"},
+  green:{c:"var(--green)", bg:"var(--green-light)"},
+  orange:{c:"var(--orange)", bg:"var(--orange-light)"},
+  teal:{c:"var(--teal)", bg:"var(--teal-light)"},
+  red:{c:"var(--red)", bg:"var(--red-light)"}
+};
 
-  function openDB(){
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = e => {
-        const d = e.target.result;
-        if(!d.objectStoreNames.contains("files")){
-          const fs = d.createObjectStore("files", { keyPath: "id" });
-          fs.createIndex("folderId", "folderId");
-        }
-        if(!d.objectStoreNames.contains("folders")){
-          const fo = d.createObjectStore("folders", { keyPath: "id" });
-          fo.createIndex("parentId", "parentId");
-        }
-        if(!d.objectStoreNames.contains("activity")){
-          d.createObjectStore("activity", { keyPath: "id" });
-        }
-      };
-      req.onsuccess = e => resolve(e.target.result);
-      req.onerror = e => reject(e.target.error);
+function n(name, sub, color, children){ return {name, sub, color, children: children||[]}; }
+
+const ORG_TREES = {
+  "customer-acquisition": n("VP Growth / CMO","Commercial Lead","purple",[
+    n("Marketing Manager","Brand & Demand Gen","blue",[ n("Content & SEO","×2 Specialists","blue"), n("Paid & Social","×1 Specialist","blue") ]),
+    n("Sales Manager","Pipeline & Closing","green",[ n("Account Execs","×3 AEs","green"), n("SDR Team","×2 Reps","green") ]),
+    n("Onboarding Manager","Post-Sale Success","orange",[ n("Onboard. Spec.","×2 CS Specialists","orange"), n("Rev Ops Analyst","Data & Reporting","orange") ])
+  ]),
+  "service-delivery": n("VP Operations","Service & Platform","purple",[
+    n("Platform Eng. Lead","Backend & Mobile","blue",[ n("Backend Eng.","×3 Engineers","blue"), n("Mobile / App","×2 Engineers","blue") ]),
+    n("DevOps Manager","Infrastructure & Venues","teal",[ n("Cloud Infra.","×2 DevOps Eng.","teal"), n("Venue Ops","×3 Field Techs","teal") ]),
+    n("Product Manager","Roadmap & UX","green",[ n("UX Designer","×1 Designer","green"), n("QA Lead","×2 QA Engineers","green") ])
+  ]),
+  "revenue-billing": n("CFO / VP Finance","Financial Operations","purple",[
+    n("Revenue Ops Mgr","Billing & Collections","blue",[ n("Billing Specialist","×2 Specialists","blue"), n("Collections Spec.","×1 Specialist","blue") ]),
+    n("Finance Manager","Reporting & Analysis","green",[ n("Financial Analyst","×1 Analyst","green"), n("Accounts Rec.","×1 AR Specialist","green") ]),
+    n("Subscription Lead","Renewals & Expansion","orange",[ n("Renewal Specialist","×2 Specialists","orange"), n("Rev. Rec. Analyst","×1 Analyst","orange") ])
+  ]),
+  "customer-support": n("CS Director","Customer Support Head","purple",[
+    n("Support Manager","Tier Oversight","blue",[ n("Tier 1 Agents","×4 General Support","blue"), n("Tier 2 Specialists","×2 Technical Issues","purple"), n("Tier 3 Engineers","×1 Escalations","red") ]),
+    n("QA Lead","Quality Control","green"),
+    n("CS Manager","Customer Success","teal"),
+    n("Training Specialist","Knowledge Base","orange")
+  ])
+};
+
+const LEGENDS = {
+  "customer-acquisition": [["VP Growth / CMO","purple"],["Marketing","blue"],["Sales","green"],["Onboarding / CS","orange"]],
+  "service-delivery": [["VP Operations","purple"],["Platform Eng.","blue"],["DevOps / Infra.","teal"],["Product / UX / QA","green"]],
+  "revenue-billing": [["CFO / VP Finance","purple"],["Revenue Operations","blue"],["Finance & Reporting","green"],["Subscriptions","orange"]],
+  "customer-support": [["Executive / Director","purple"],["Support Manager","blue"],["QA Lead","green"],["Customer Success","teal"],["Training / KB","orange"],["Tier 2 Specialists","purple"],["Tier 3 Engineers","red"]]
+};
+
+const INFO_SECTIONS = {
+  "customer-acquisition": { title:"Lead Sources", items:[
+    {mono:"WS", color:"blue", title:"Website & SEO", sub:"Organic search & content", tag:"Inbound – high intent"},
+    {mono:"PM", color:"purple", title:"Paid Media", sub:"Google, Meta & LinkedIn Ads", tag:"Paid – scalable reach"},
+    {mono:"PR", color:"green", title:"Partner Referrals", sub:"Venue & sports club network", tag:"Referral – high convert"},
+    {mono:"FE", color:"orange", title:"Field & Events", sub:"Sports events & trade shows", tag:"Outbound – relationship"}
+  ]},
+  "service-delivery": { title:"Platform Components", items:[
+    {mono:"MA", color:"blue", title:"Mobile App", sub:"iOS & Android clients", tag:"User-facing layer"},
+    {mono:"CB", color:"purple", title:"Cloud Backend", sub:"REST API & microservices", tag:"Core platform"},
+    {mono:"CS", color:"teal", title:"Camera System", sub:"Hardware, firmware & drivers", tag:"Physical infrastructure"},
+    {mono:"VC", color:"green", title:"Video CDN", sub:"Encoding, storage & delivery", tag:"Media pipeline"}
+  ]},
+  "revenue-billing": { title:"Revenue Streams", items:[
+    {mono:"MS", color:"blue", title:"Monthly Subscriptions", sub:"Per-venue recurring plans", tag:"Primary revenue"},
+    {mono:"AC", color:"purple", title:"Annual Contracts", sub:"Multi-year venue agreements", tag:"High-value, low churn"},
+    {mono:"PE", color:"orange", title:"Per-Event Billing", sub:"Usage-based tournament pricing", tag:"Variable revenue"},
+    {mono:"AS", color:"green", title:"Add-on Services", sub:"Analytics, branding & priority", tag:"Expansion revenue"}
+  ]},
+  "customer-support": { title:"Support Channels", items:[
+    {mono:"EM", color:"blue", title:"Email Support", sub:"support@company.com", tag:"< 4 hrs response"},
+    {mono:"LC", color:"green", title:"Live Chat", sub:"In-app chat widget", tag:"< 2 min response"},
+    {mono:"PH", color:"purple", title:"Phone Support", sub:"+1 (800) XXX-XXXX", tag:"Immediate connect"},
+    {mono:"HP", color:"orange", title:"Help Portal", sub:"help.company.com", tag:"< 8 hrs response"}
+  ]}
+};
+
+const BRANCH_SECTIONS = {
+  "customer-acquisition": { title:"Functional Areas & Topics", items:[
+    {slug:"lead-generation", mono:"LG", color:"blue", title:"Lead Generation", tag:"Marketing"},
+    {slug:"lead-qualification", mono:"LQ", color:"blue", title:"Lead Qualification", tag:"Marketing"},
+    {slug:"sales-development", mono:"SD", color:"green", title:"Sales Development", tag:"Sales"},
+    {slug:"demo-proposal", mono:"DP", color:"green", title:"Demo & Proposal", tag:"Sales"},
+    {slug:"contract-close", mono:"CC", color:"green", title:"Contract & Close", tag:"Sales"},
+    {slug:"customer-onboarding", mono:"CO", color:"orange", title:"Customer Onboarding", tag:"Onboarding"}
+  ]},
+  "service-delivery": { title:"Service Components & Topics", items:[
+    {slug:"qr-authentication", mono:"QR", color:"red", title:"QR & Authentication", tag:"P1 Critical"},
+    {slug:"camera-management", mono:"CM", color:"red", title:"Camera Management", tag:"P1 Critical"},
+    {slug:"recording-sessions", mono:"RS", color:"red", title:"Recording & Sessions", tag:"P1 Critical"},
+    {slug:"highlight-tagging", mono:"HT", color:"orange", title:"Highlight Tagging", tag:"P2 High"},
+    {slug:"video-processing", mono:"VP", color:"red", title:"Video Processing", tag:"P1 Critical"},
+    {slug:"delivery-notifications", mono:"DN", color:"orange", title:"Delivery & Notifications", tag:"P2 High"}
+  ]},
+  "revenue-billing": { title:"Revenue Functions & Topics", items:[
+    {slug:"pipeline-forecasting", mono:"PF", color:"blue", title:"Pipeline & Forecasting", tag:"Sales Ops"},
+    {slug:"subscription-management", mono:"SM", color:"purple", title:"Subscription Management", tag:"Billing"},
+    {slug:"invoicing-billing", mono:"IB", color:"purple", title:"Invoicing & Billing", tag:"Billing"},
+    {slug:"payment-collection", mono:"PC", color:"green", title:"Payment Collection", tag:"Finance"},
+    {slug:"revenue-recognition", mono:"RR", color:"teal", title:"Revenue Recognition", tag:"Compliance"},
+    {slug:"financial-reporting", mono:"FR", color:"orange", title:"Financial Reporting", tag:"Analytics"}
+  ]},
+  "customer-support": { title:"Issue Categories & Documents", items:[
+    {slug:"account-access", mono:"AA", color:"blue", title:"Account & Access", tag:"Tier 1"},
+    {slug:"technical-issues", mono:"TI", color:"red", title:"Technical Issues", tag:"Tier 2"},
+    {slug:"video-delivery", mono:"VD", color:"purple", title:"Video Delivery", tag:"Tier 2"},
+    {slug:"billing-payments", mono:"BP", color:"green", title:"Billing & Payments", tag:"Tier 1"},
+    {slug:"venue-hardware", mono:"VH", color:"orange", title:"Venue & Hardware", tag:"Tier 3"},
+    {slug:"general-inquiries", mono:"GI", color:"teal", title:"General Inquiries", tag:"Tier 1"}
+  ]}
+};
+
+const WORKFLOWS = {
+  "customer-acquisition": [["Campaign","Traffic & lead gen"],["Lead Capture","Form / demo request"],["Lead Scoring","Auto-qualify via CRM"],["MQL Review","Marketing qualifies"],["SQL Handoff","Passed to Sales"],["Discovery","Call & needs analysis"],["Product Demo","Live demo delivered"],["Proposal","Pricing & contract"],["Contract Won","Signed & booked"],["Onboarding","CS team takes over"]],
+  "service-delivery": [["QR Scan","User scans at venue"],["Auth","Google login & token"],["Cam Select","Single or dual camera"],["Recording","Session starts"],["Live Tags","Highlight moments tagged"],["Stop","Session ends"],["Processing","Encode & compile"],["QA Check","Quality validation"],["Email Delivery","Video links sent"],["Customer","Views & shares video"]],
+  "revenue-billing": [["Lead","Opportunity in CRM"],["Qualified Opp.","Deal value estimated"],["Proposal","Pricing & terms sent"],["Contract Signed","E-sign completed"],["Subscription","Plan activated in system"],["First Invoice","Auto-generated & sent"],["Payment","Collected & reconciled"],["Rev. Recognized","ASC 606 applied"],["Renewal Trigger","60-day renewal alert"],["Renew / Expand","Upsell or churn recorded"]],
+  "customer-support": [["Intake","Email / Chat / Phone / Portal"],["Auto-Triage","AI classification + ticket"],["Tier 1 Review","Agent assesses severity & type"],["Quick Resolution","KB article or direct fix"],["Escalation","Complex issues → Tier 2/3"],["Investigation","Root cause analysis & deep fix"],["Resolve & Notify","Fix confirmed, customer told"],["CSAT Follow-up","Satisfaction survey sent"],["Documentation","KB updated, trends logged"]]
+};
+
+const KPIS = {
+  "customer-acquisition": [["down","11%","$12","Cost Per Lead","Target: < $15"],["up","4%","34%","Lead-to-MQL Rate","Target: > 30%"],["up","2%","42%","MQL-to-SQL Rate","Target: > 40%"],["down","6%","$280","Customer Acq. Cost (CAC)","Target: < $350"],["down","2d","18 days","Sales Cycle Length","Target: < 21 days"],["up","3%","31%","Win Rate","Target: > 28%"],["up","1%","28%","Demo-to-Close Rate","Target: > 25%"],["up","14%","$248K","Pipeline Value","Tracked monthly"],["up","9%","47 logos","Net New Logos / Mo.","Tracked monthly"],["up","7%","$32K/mo","New MRR Added","Tracked monthly"]],
+  "service-delivery": [["up","0.1%","99.8%","System Uptime","Target: > 99.5%"],["up","1.2%","98.2%","Recording Success Rate","Target: > 97%"],["down","0.6m","4.2 min","Video Processing Time","Target: < 5 min"],["up","0.3%","99.6%","Email Delivery Rate","Target: > 99%"],["up","1.8%","96.8%","Camera Availability","Target: > 95%"],["down","20ms","145 ms","API Response Time","Target: < 200ms"],["up","7%","87%","User Activation Rate","Target: > 80%"],["down","4m","8 min","Incident Response Time","Target: < 15 min"],["up","12%","342 videos","Videos Delivered / Day","Tracked daily"],["down","8m","22 min","Mean Time to Recovery","Target: < 30 min"]],
+  "revenue-billing": [["up","8%","$148K/mo","Monthly Recurring Rev.","Tracked monthly"],["up","8%","$1.77M","Annual Recurring Rev.","Tracked annual"],["up","5%","112%","Net Revenue Retention","Target: > 100%"],["down","0.4%","2.8%","Gross Revenue Churn","Target: < 4%"],["up","1.4%","97.4%","Payment Success Rate","Target: > 96%"],["down","3d","18 days","Days Sales Outstanding","Target: < 30 days"],["up","6%","$3,148","Avg. Contract Value","Tracked quarterly"],["up","3%","23%","Expansion Revenue Share","Target: > 20%"],["up","11%","$9.2K","Customer LTV","Tracked quarterly"],["up","2%","71%","Gross Margin","Target: > 65%"]],
+  "customer-support": [["down","8%","45 min","First Response Time","Target: < 1 hr"],["up","3%","78%","First Contact Resolution","Target: > 75%"],["down","12%","18 hrs","Avg. Resolution Time","Target: < 24 hrs"],["up","0.2","4.6 / 5","CSAT Score","Target: > 4.5"],["up","7","62 NPS","Net Promoter Score","Target: > 50"],["up","2%","97%","SLA Compliance","Target: > 95%"],["down","3%","12%","Escalation Rate","Target: < 15%"],["down","1%","4.2%","Ticket Reopen Rate","Target: < 5%"],["flat","0%","74%","Agent Utilization","Target: 70–80%"],["up","8%","1,248 tickets","Monthly Ticket Volume","Tracked monthly"]]
+};
+
+const TAB_META = {
+  "business-map": {badge:"Business Architecture", title:"Business Process Map",
+    sub:"Complete overview of organizational structure, customer acquisition, service delivery, support & revenue flows"},
+  "customer-acquisition": {badge:"Functional Structure", title:"Customer Acquisition",
+    sub:"Team hierarchy, lead sources, functional areas, acquisition workflow, and key performance indicators"},
+  "service-delivery": {badge:"Functional Structure", title:"Service Delivery",
+    sub:"Team hierarchy, platform components, service areas, end-to-end delivery flow, and key performance indicators"},
+  "revenue-billing": {badge:"Functional Structure", title:"Revenue & Billing",
+    sub:"Team hierarchy, revenue streams, billing functions, revenue flow, and key performance indicators"},
+  "customer-support": {badge:"Functional Structure", title:"Customer Support",
+    sub:"Team hierarchy, support channels, issue handling topics, resolution workflow, and key performance indicators"}
+};
+
+const BUSINESS_MAP_ORG = n("CEO","Executive Management","purple",[
+  n("Product Management","","blue",[
+    n("Engineering & Development","","blue",[
+      n("Quality Assurance (QA)","","blue"),
+      n("DevOps & Cloud Infrastructure","","blue",[ n("Venue Operations","Camera Mgmt","blue") ])
+    ])
+  ]),
+  n("Finance & Accounting","","green",[ n("Legal & Compliance","","green") ]),
+  n("HR","Human Resources","orange")
+]);
+const BUSINESS_MAP_LEGEND = [["Executive","purple"],["Product & Tech","blue"],["Finance & Legal","green"],["Human Resources","orange"]];
+const BUSINESS_MAP_FLOWS = [
+  {title:"Customer Acquisition", color:"teal", steps:["Marketing","Sales","Customer Success","Onboarding"]},
+  {title:"Service Delivery", color:"purple", steps:["User Scans QR","Google Login","Select Camera (or Both Cameras)","Start Recording","Highlight Tags (During Match)","End Recording","Video Processing (Encoding)","Email Delivery (Video Links)","Customer Review & Sharing"]},
+  {title:"Customer Support", color:"red", steps:["Customer Support","Ticket Handling","Technical Escalation","Resolution","Customer Satisfaction"]},
+  {title:"Revenue & Billing", color:"green", steps:["Lead","Customer Purchase","Subscription Setup","Invoice Generation","Payment Collection","Revenue Recognition","Financial Reporting"]}
+];
+
+/* ============================== IndexedDB ============================== */
+const DB_NAME = "rallysight_business_map_db_v1";
+const DB_VERSION = 1;
+let db;
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e=>{
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains("files")){
+        const fs = d.createObjectStore("files", {keyPath:"id"});
+        fs.createIndex("folderId","folderId");
+      }
+      if(!d.objectStoreNames.contains("activity")) d.createObjectStore("activity", {keyPath:"id"});
+    };
+    req.onsuccess = e=>resolve(e.target.result);
+    req.onerror = e=>reject(e.target.error);
+  });
+}
+function tx(store,mode){ return db.transaction(store,mode).objectStore(store); }
+function put(store,obj){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").put(obj); r.onsuccess=()=>res(obj); r.onerror=()=>rej(r.error); }); }
+function del(store,id){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
+function getAll(store){ return new Promise((res,rej)=>{ const r=tx(store,"readonly").getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+
+let files = [];
+let activityLog = [];
+const uid = ()=> (crypto.randomUUID ? crypto.randomUUID() : "id-"+Date.now()+"-"+Math.random().toString(16).slice(2));
+
+function formatBytes(b){ if(!b) return "0 B"; const u=["B","KB","MB","GB"]; let i=0; while(b>=1024&&i<u.length-1){b/=1024;i++;} return (i===0?b:b.toFixed(1))+" "+u[i]; }
+function timeAgo(ts){ const s=Math.floor((Date.now()-ts)/1000); if(s<10)return "just now"; if(s<60)return s+"s ago"; const m=Math.floor(s/60); if(m<60)return m+"m ago"; const h=Math.floor(m/60); if(h<24)return h+"h ago"; const d=Math.floor(h/24); return d+"d ago"; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function extOf(name){ const p=name.split("."); return p.length>1 ? p.pop().toUpperCase().slice(0,4) : "FILE"; }
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+async function logActivity(text, color){
+  const entry = {id:uid(), text, color, ts:Date.now()};
+  await put("activity", entry);
+  activityLog.unshift(entry);
+  if(activityLog.length>300){ const rem=activityLog.pop(); del("activity", rem.id); }
+}
+
+/* ============================== Rendering helpers ============================== */
+function renderOrgTree(node){
+  const col = COLORS[node.color]||COLORS.purple;
+  let html = `<div class="org-node" style="border-color:${col.c};color:${col.c}">${esc(node.name)}${node.sub?`<div class="sub">${esc(node.sub)}</div>`:""}</div>`;
+  if(node.children && node.children.length){
+    html += `<div class="org-connector"></div>`;
+    html += `<div class="org-row">`;
+    html += node.children.map(c=>`<div class="org-children">${renderOrgTree(c)}</div>`).join("");
+    html += `</div>`;
+  }
+  return html;
+}
+
+function renderInfoSection(key){
+  const sec = INFO_SECTIONS[key]; if(!sec) return "";
+  return `<div class="section">
+    <div class="section-head"><span class="section-bar"></span><h2>${esc(sec.title)}</h2></div>
+    <div class="info-grid">${sec.items.map(it=>{
+      const c = COLORS[it.color];
+      return `<div class="info-card">
+        <div class="info-icon" style="background:${c.bg};color:${c.c}">${esc(it.mono)}</div>
+        <h4>${esc(it.title)}</h4>
+        <p>${esc(it.sub)}</p>
+        <span class="info-tag" style="background:${c.bg};color:${c.c}">${esc(it.tag)}</span>
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function branchId(tabKey, slug){ return tabKey+"__"+slug; }
+
+function renderBranchSection(key){
+  const sec = BRANCH_SECTIONS[key]; if(!sec) return "";
+  return `<div class="section">
+    <div class="section-head"><span class="section-bar"></span><h2>${esc(sec.title)}</h2></div>
+    <div class="branch-grid">${sec.items.map(it=>{
+      const c = COLORS[it.color];
+      const bid = branchId(key, it.slug);
+      return `<div class="branch-card" id="branch-${bid}" data-branch="${bid}">
+        <div class="branch-head" data-toggle="${bid}">
+          <div class="branch-chip" style="background:${c.bg};color:${c.c}">${esc(it.mono)}</div>
+          <div class="branch-info">
+            <h4>${esc(it.title)}</h4>
+            <span class="branch-tag" style="background:${c.bg};color:${c.c}">${esc(it.tag)}</span>
+            <span class="branch-doc-count" data-count="${bid}">0 documents</span>
+          </div>
+          <svg class="branch-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="branch-body" data-body="${bid}"></div>
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function renderWorkflow(key){
+  const steps = WORKFLOWS[key]; if(!steps) return "";
+  return `<div class="section">
+    <div class="section-head"><span class="section-bar"></span><h2>Workflow</h2></div>
+    <div class="panel"><div class="workflow-wrap"><div class="workflow-row">
+      ${steps.map((s,i)=>`<div class="wf-step"><div class="wf-num">${i+1}</div><h5>${esc(s[0])}</h5><p>${esc(s[1])}</p></div>${i<steps.length-1?'<div class="wf-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>':''}`).join("")}
+    </div></div></div>
+  </div>`;
+}
+
+function renderKPIs(key){
+  const kpis = KPIS[key]; if(!kpis) return "";
+  return `<div class="section">
+    <div class="section-head"><span class="section-bar"></span><h2>Key Performance Indicators</h2></div>
+    <div class="kpi-grid">${kpis.map(k=>{
+      const [dir,delta,value,label,target] = k;
+      const arrow = dir==="up" ? "▲" : dir==="down" ? "▼" : "→";
+      return `<div class="kpi-card">
+        <span class="kpi-trend ${dir}">${arrow} ${esc(delta)}</span>
+        <div class="kpi-value">${esc(value)}</div>
+        <div class="kpi-label">${esc(label)}</div>
+        <div class="kpi-target">${esc(target)}</div>
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function renderFunctionalTab(key){
+  const tree = ORG_TREES[key];
+  const legend = LEGENDS[key];
+  return `
+    ${heroHTML(key)}
+    <div class="section">
+      <div class="section-head"><span class="section-bar"></span><h2>Team Structure</h2></div>
+      <div class="panel"><div class="org-wrap"><div class="org-tree">${renderOrgTree(tree)}</div></div>
+        <div class="legend-row">${legend.map(([label,color])=>`<div class="legend-chip"><span class="legend-dot" style="background:${COLORS[color].c}"></span>${esc(label)}</div>`).join("")}</div>
+      </div>
+    </div>
+    ${renderInfoSection(key)}
+    ${renderBranchSection(key)}
+    ${renderWorkflow(key)}
+    ${renderKPIs(key)}
+  `;
+}
+
+function heroHTML(key){
+  const m = TAB_META[key];
+  return `<header class="hero">
+    <span class="badge">${esc(m.badge)}</span>
+    <h1>${esc(m.title)}</h1>
+    <p>${esc(m.sub)}</p>
+  </header>`;
+}
+
+function renderBusinessMap(){
+  return `
+    ${heroHTML("business-map")}
+    <div class="section">
+      <div class="section-head"><span class="section-bar"></span><h2>Organization Structure</h2></div>
+      <div class="panel"><div class="org-wrap"><div class="org-tree">${renderOrgTree(BUSINESS_MAP_ORG)}</div></div>
+        <div class="legend-row">${BUSINESS_MAP_LEGEND.map(([label,color])=>`<div class="legend-chip"><span class="legend-dot" style="background:${COLORS[color].c}"></span>${esc(label)}</div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-head"><span class="section-bar"></span><h2>Process Flows</h2></div>
+      <div class="panel"><div class="workflow-wrap" style="display:flex;gap:24px;">
+        ${BUSINESS_MAP_FLOWS.map(flow=>{
+          const c = COLORS[flow.color];
+          return `<div style="min-width:200px;border:1.5px solid ${c.c};border-radius:14px;padding:14px;background:${c.bg}22;">
+            <div style="font-weight:800;color:${c.c};font-size:13px;margin-bottom:10px;">${esc(flow.title)}</div>
+            ${flow.steps.map((s,i)=>`<div style="background:#fff;border:1px solid ${c.c}55;border-radius:8px;padding:8px 10px;font-size:11.5px;font-weight:700;margin-bottom:${i<flow.steps.length-1?'16px':'0'};position:relative;">${esc(s)}${i<flow.steps.length-1?`<div style="position:absolute;left:50%;bottom:-16px;width:1px;height:14px;background:${c.c}55;"></div>`:''}</div>`).join("")}
+          </div>`;
+        }).join("")}
+      </div></div>
+    </div>
+  `;
+}
+
+/* ============================== Document manager (per branch) ============================== */
+let activeBranchForUpload = null;
+
+function branchFiles(bid){ return files.filter(f=>f.folderId===bid); }
+
+function renderDocBody(bid){
+  const list = branchFiles(bid);
+  const countEl = document.querySelector(`[data-count="${bid}"]`);
+  if(countEl) countEl.textContent = list.length+" document"+(list.length===1?"":"s");
+  const body = document.querySelector(`[data-body="${bid}"]`);
+  if(!body) return;
+  body.innerHTML = `
+    <div class="doc-dropzone" data-dz="${bid}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>Drag &amp; drop or click to upload documents for this branch</span>
+    </div>
+    <div class="doc-list">${list.length ? list.map(f=>`
+      <div class="doc-row">
+        <div class="doc-chip" style="background:var(--slate-200);color:var(--slate-700)">${esc(extOf(f.name))}</div>
+        <div class="flex1"><div class="doc-name">${esc(f.name)}</div><div class="doc-meta">${formatBytes(f.size)} · ${timeAgo(f.createdAt)}</div></div>
+        <div class="doc-actions">
+          <button class="mini-btn" data-dl="${f.id}" title="Download">⬇</button>
+          <button class="mini-btn" data-del="${f.id}" data-belongs="${bid}" title="Delete">🗑</button>
+        </div>
+      </div>`).join("") : `<div class="doc-empty">No documents stored yet for this branch.</div>`}
+    </div>`;
+
+  const dz = body.querySelector(`[data-dz]`);
+  dz.addEventListener("click", ()=>{ activeBranchForUpload = bid; document.getElementById("fileInput").click(); });
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add("drag"); }));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove("drag"); }));
+  dz.addEventListener("drop", e=>{ if(e.dataTransfer.files.length) handleBranchFiles(bid, e.dataTransfer.files); });
+
+  body.querySelectorAll("[data-dl]").forEach(b=>b.addEventListener("click",(e)=>{ e.stopPropagation(); downloadFile(b.dataset.dl); }));
+  body.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",(e)=>{ e.stopPropagation(); deleteFile(b.dataset.del, b.dataset.belongs); }));
+}
+
+async function handleBranchFiles(bid, fileList){
+  const list = Array.from(fileList);
+  for(const f of list){
+    const record = {id:uid(), name:f.name, type:f.type||"application/octet-stream", size:f.size, blob:f, folderId:bid, createdAt:Date.now()};
+    await put("files", record);
+    files.push(record);
+  }
+  const label = branchLabel(bid);
+  logActivity(`Uploaded ${list.length} document${list.length===1?"":"s"} to "${label}"`, "var(--blue)");
+  toast(`${list.length} document${list.length===1?"":"s"} uploaded`);
+  renderDocBody(bid);
+  updateStorageStats();
+}
+
+function branchLabel(bid){
+  for(const key in BRANCH_SECTIONS){
+    const found = BRANCH_SECTIONS[key].items.find(it=>branchId(key,it.slug)===bid);
+    if(found) return found.title;
+  }
+  return bid;
+}
+
+function downloadFile(id){
+  const f = files.find(x=>x.id===id); if(!f) return;
+  const url = URL.createObjectURL(f.blob);
+  const a = document.createElement("a"); a.href=url; a.download=f.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  logActivity(`Downloaded "${f.name}"`, "var(--teal)");
+}
+
+async function deleteFile(id, bid){
+  const f = files.find(x=>x.id===id); if(!f) return;
+  if(!confirm(`Delete "${f.name}"? This can't be undone.`)) return;
+  await del("files", id);
+  files = files.filter(x=>x.id!==id);
+  logActivity(`Deleted "${f.name}"`, "var(--red)");
+  toast("Deleted");
+  renderDocBody(bid);
+  updateStorageStats();
+}
+
+/* ============================== Global storage stats / activity modal ============================== */
+async function updateStorageStats(){
+  const totalDocs = files.length;
+  const totalBytes = files.reduce((s,f)=>s+(f.size||0),0);
+  const branchesUsed = new Set(files.map(f=>f.folderId)).size;
+  const el = document.getElementById("modalBox");
+  if(el && el.dataset.mode === "storage"){
+    document.getElementById("aggDocs").textContent = totalDocs;
+    document.getElementById("aggSize").textContent = formatBytes(totalBytes);
+    document.getElementById("aggBranches").textContent = branchesUsed;
+  }
+}
+
+function openStorageModal(){
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "storage";
+  box.style.width = "480px";
+  const totalDocs = files.length;
+  const totalBytes = files.reduce((s,f)=>s+(f.size||0),0);
+  const branchesUsed = new Set(files.map(f=>f.folderId)).size;
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Storage &amp; Activity</h3>
+    <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px;">
+      <div class="stat-card"><div class="stat-num" id="aggDocs">${totalDocs}</div><div class="stat-label">Documents</div></div>
+      <div class="stat-card"><div class="stat-num" id="aggSize">${formatBytes(totalBytes)}</div><div class="stat-label">Storage used</div></div>
+      <div class="stat-card"><div class="stat-num" id="aggBranches">${branchesUsed}</div><div class="stat-label">Branches with docs</div></div>
+    </div>
+    <div class="settings-row">
+      <div><h4>Export document inventory</h4><p>CSV list of every stored document and its branch.</p></div>
+      <button class="btn btn-ghost" id="exportBtn">Export</button>
+    </div>
+    <div class="settings-row">
+      <div><h4>Clear all data</h4><p>Permanently deletes every stored document in this browser.</p></div>
+      <button class="btn btn-danger" id="clearAllBtn">Clear</button>
+    </div>
+    <h3 style="margin-top:18px;">Recent Activity</h3>
+    <div id="activityList"></div>
+  `;
+  renderActivityList();
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("exportBtn").onclick = exportCSV;
+  document.getElementById("clearAllBtn").onclick = clearAll;
+  overlay.classList.add("show");
+}
+
+function renderActivityList(){
+  const c = document.getElementById("activityList");
+  if(!c) return;
+  if(activityLog.length===0){ c.innerHTML = `<div class="doc-empty">No activity yet.</div>`; return; }
+  c.innerHTML = activityLog.slice(0,30).map(a=>`
+    <div class="activity-item" style="border-left-color:${a.color}">
+      <span class="activity-dot" style="background:${a.color}"></span>
+      <div><div>${esc(a.text)}</div><div class="activity-time">${timeAgo(a.ts)}</div></div>
+    </div>`).join("");
+}
+
+function exportCSV(){
+  const rows = [["Branch","Document Name","Size (bytes)","Type","Added"]];
+  files.forEach(f=> rows.push([branchLabel(f.folderId), f.name, f.size, f.type, new Date(f.createdAt).toISOString()]));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download="document-inventory.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  toast("Inventory exported");
+}
+
+async function clearAll(){
+  if(!confirm("This will permanently delete ALL stored documents. Continue?")) return;
+  if(!confirm("Are you absolutely sure? This cannot be undone.")) return;
+  for(const f of files) await del("files", f.id);
+  for(const a of activityLog) await del("activity", a.id);
+  files = []; activityLog = [];
+  toast("All data cleared");
+  closeModal();
+  document.querySelectorAll(".branch-card").forEach(card=>{
+    const bid = card.dataset.branch;
+    if(card.classList.contains("open")) renderDocBody(bid);
+    const countEl = document.querySelector(`[data-count="${bid}"]`);
+    if(countEl) countEl.textContent = "0 documents";
+  });
+}
+
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("show"); }
+
+/* ============================== Tabs / navigation ============================== */
+const TABS = ["business-map","customer-acquisition","service-delivery","revenue-billing","customer-support"];
+
+function renderAllPages(){
+  const wrap = document.getElementById("pages");
+  wrap.innerHTML = TABS.map(key=>`<div class="tabpage" id="page-${key}"><div class="container">
+    ${key==="business-map" ? renderBusinessMap() : renderFunctionalTab(key)}
+  </div></div>`).join("");
+
+  // wire branch expand/collapse
+  wrap.querySelectorAll("[data-toggle]").forEach(head=>{
+    head.addEventListener("click", ()=>{
+      const bid = head.dataset.toggle;
+      const card = document.getElementById("branch-"+bid);
+      const wasOpen = card.classList.contains("open");
+      card.classList.toggle("open");
+      if(!wasOpen) renderDocBody(bid);
     });
-  }
-  function tx(store, mode){ return db.transaction(store, mode).objectStore(store); }
-  function put(store, obj){ return new Promise((res, rej) => { const r = tx(store,"readwrite").put(obj); r.onsuccess=()=>res(obj); r.onerror=()=>rej(r.error); }); }
-  function del(store, id){ return new Promise((res, rej) => { const r = tx(store,"readwrite").delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
-  function getAll(store){ return new Promise((res, rej) => { const r = tx(store,"readonly").getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-  function get(store, id){ return new Promise((res, rej) => { const r = tx(store,"readonly").get(id); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+  });
 
-  /* ---------- State ---------- */
-  let files = [];
-  let folders = [];
-  let activityLog = [];
-  let currentFolderId = "root";
-  let viewMode = "grid";
-  let searchQuery = "";
+  // initialize doc counts
+  document.querySelectorAll("[data-count]").forEach(el=>{
+    const bid = el.dataset.count;
+    const list = branchFiles(bid);
+    el.textContent = list.length+" document"+(list.length===1?"":"s");
+  });
+}
 
-  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+function switchTab(key){
+  document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+key).classList.add("active");
+  document.querySelectorAll(".navtab[data-tab]").forEach(b=>b.classList.toggle("active", b.dataset.tab===key));
+  window.scrollTo({top:0, behavior:"instant"});
+}
 
-  /* ---------- Helpers ---------- */
-  function formatBytes(b){
-    if(!b) return "0 B";
-    const u = ["B","KB","MB","GB"];
-    let i = 0;
-    while(b >= 1024 && i < u.length-1){ b/=1024; i++; }
-    return (i===0 ? b : b.toFixed(1)) + " " + u[i];
-  }
-  function timeAgo(ts){
-    const s = Math.floor((Date.now()-ts)/1000);
-    if(s<10) return "just now";
-    if(s<60) return s+"s ago";
-    const m = Math.floor(s/60); if(m<60) return m+"m ago";
-    const h = Math.floor(m/60); if(h<24) return h+"h ago";
-    const d = Math.floor(h/24); if(d<30) return d+"d ago";
-    return new Date(ts).toLocaleDateString();
-  }
-  function extOf(name){ const p = name.split("."); return p.length>1 ? p.pop().toUpperCase() : "FILE"; }
-  function categoryFor(name){
-    const ext = extOf(name).toLowerCase();
-    if(["png","jpg","jpeg","gif","svg","webp","bmp"].includes(ext)) return {color:"var(--blue)", bg:"var(--blue-light)"};
-    if(["mp3","mp4","mov","wav","avi","mkv"].includes(ext)) return {color:"var(--teal)", bg:"var(--teal-light)"};
-    if(["xls","xlsx","csv"].includes(ext)) return {color:"var(--green)", bg:"var(--green-light)"};
-    if(["ppt","pptx"].includes(ext)) return {color:"var(--orange)", bg:"var(--orange-light)"};
-    if(["zip","rar","7z","tar","gz"].includes(ext)) return {color:"var(--purple)", bg:"var(--purple-light)"};
-    if(["pdf","doc","docx","txt","md","rtf"].includes(ext)) return {color:"var(--red)", bg:"var(--red-light)"};
-    return {color:"var(--slate-500)", bg:"var(--slate-100)"};
-  }
-  function toast(msg){
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
-  }
+function initNav(){
+  document.querySelectorAll(".navtab[data-tab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>switchTab(btn.dataset.tab));
+  });
+  document.getElementById("storageBtn").addEventListener("click", openStorageModal);
+  document.getElementById("modalOverlay").addEventListener("click", e=>{ if(e.target.id==="modalOverlay") closeModal(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
+  document.getElementById("fileInput").addEventListener("change", e=>{
+    if(e.target.files.length && activeBranchForUpload) handleBranchFiles(activeBranchForUpload, e.target.files);
+    e.target.value = "";
+  });
+}
 
-  async function logActivity(text, color){
-    const entry = { id: uid(), text, color, ts: Date.now() };
-    await put("activity", entry);
-    activityLog.unshift(entry);
-    if(activityLog.length > 200){
-      const rem = activityLog.pop();
-      del("activity", rem.id);
-    }
-    renderActivity();
-  }
-
-  /* ---------- Data load ---------- */
-  async function loadAll(){
-    folders = await getAll("folders");
+/* ============================== Init ============================== */
+async function init(){
+  try{
+    db = await openDB();
     files = await getAll("files");
     activityLog = (await getAll("activity")).sort((a,b)=>b.ts-a.ts);
-    if(!folders.find(f=>f.id==="root")){
-      const rootFolder = { id:"root", name:"My Files", parentId:null, createdAt:Date.now() };
-      folders.push(rootFolder);
-      await put("folders", rootFolder);
-    }
+  }catch(e){
+    toast("Storage unavailable in this browser context");
+    console.error(e);
   }
+  renderAllPages();
+  initNav();
+  switchTab("business-map");
+}
 
-  /* ---------- Rendering ---------- */
-  function folderPath(id){
-    const path = [];
-    let cur = folders.find(f=>f.id===id);
-    while(cur){
-      path.unshift(cur);
-      cur = cur.parentId ? folders.find(f=>f.id===cur.parentId) : null;
-    }
-    return path;
-  }
-
-  function renderBreadcrumb(){
-    const bc = document.getElementById("breadcrumb");
-    if(searchQuery){
-      bc.innerHTML = `<span class="crumb current">Search results for "${escapeHtml(searchQuery)}"</span>`;
-      return;
-    }
-    const path = folderPath(currentFolderId);
-    bc.innerHTML = path.map((f,i) => {
-      const isLast = i === path.length-1;
-      return `<span class="crumb ${isLast?"current":""}" data-id="${f.id}">${escapeHtml(f.name)}</span>` +
-        (isLast ? "" : `<span class="sep">/</span>`);
-    }).join("");
-    bc.querySelectorAll(".crumb").forEach(el=>{
-      el.addEventListener("click", ()=>{ currentFolderId = el.dataset.id; renderFiles(); });
-    });
-  }
-
-  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-
-  function iconChip(item, isFolder){
-    if(isFolder){
-      return `<div class="item-icon" style="background:var(--purple-light);color:var(--purple)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-      </div>`;
-    }
-    const cat = categoryFor(item.name);
-    return `<div class="item-icon" style="background:${cat.bg};color:${cat.color}">${extOf(item.name).slice(0,4)}</div>`;
-  }
-
-  function currentItems(){
-    let fList, foList;
-    if(searchQuery){
-      const q = searchQuery.toLowerCase();
-      fList = files.filter(f=>f.name.toLowerCase().includes(q));
-      foList = folders.filter(f=>f.id!=="root" && f.name.toLowerCase().includes(q));
-    } else {
-      fList = files.filter(f=>f.folderId===currentFolderId);
-      foList = folders.filter(f=>f.parentId===currentFolderId);
-    }
-    return { fList, foList };
-  }
-
-  function renderFiles(){
-    renderBreadcrumb();
-    const { fList, foList } = currentItems();
-    const container = document.getElementById("itemContainer");
-
-    if(fList.length===0 && foList.length===0){
-      container.innerHTML = `<div class="empty-state">
-        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <div>${searchQuery ? "No matches found" : "This folder is empty — upload a file or drop it here"}</div>
-      </div>`;
-      updateStats();
-      return;
-    }
-
-    const items = [
-      ...foList.map(f=>({...f, __type:"folder"})),
-      ...fList.map(f=>({...f, __type:"file"}))
-    ];
-
-    if(viewMode === "grid"){
-      container.innerHTML = `<div class="item-grid">${items.map(renderGridCard).join("")}</div>`;
-    } else {
-      container.innerHTML = items.map(renderListRow).join("");
-    }
-
-    container.querySelectorAll("[data-open-folder]").forEach(el=>{
-      el.addEventListener("click", (e)=>{ if(e.target.closest(".mini-btn")) return; currentFolderId = el.dataset.openFolder; searchQuery=""; document.getElementById("searchInput").value=""; renderFiles(); });
-    });
-    container.querySelectorAll("[data-open-file]").forEach(el=>{
-      el.addEventListener("click", (e)=>{ if(e.target.closest(".mini-btn")) return; openPreview(el.dataset.openFile); });
-    });
-    container.querySelectorAll("[data-dl]").forEach(el=> el.addEventListener("click", (e)=>{ e.stopPropagation(); downloadFile(el.dataset.dl); }));
-    container.querySelectorAll("[data-star]").forEach(el=> el.addEventListener("click", (e)=>{ e.stopPropagation(); toggleStar(el.dataset.star); }));
-    container.querySelectorAll("[data-rename]").forEach(el=> el.addEventListener("click", (e)=>{ e.stopPropagation(); renameItem(el.dataset.rename, el.dataset.renameType); }));
-    container.querySelectorAll("[data-del]").forEach(el=> el.addEventListener("click", (e)=>{ e.stopPropagation(); deleteItem(el.dataset.del, el.dataset.delType); }));
-
-    updateStats();
-  }
-
-  function renderGridCard(item){
-    if(item.__type==="folder"){
-      const count = files.filter(f=>f.folderId===item.id).length + folders.filter(f=>f.parentId===item.id).length;
-      return `<div class="item-card" data-open-folder="${item.id}">
-        <div class="item-actions">
-          <button class="mini-btn" data-rename="${item.id}" data-rename-type="folder" title="Rename">✎</button>
-          <button class="mini-btn" data-del="${item.id}" data-del-type="folder" title="Delete">🗑</button>
-        </div>
-        ${iconChip(item, true)}
-        <div class="item-name">${escapeHtml(item.name)}</div>
-        <div class="item-meta">${count} item${count===1?"":"s"}</div>
-      </div>`;
-    }
-    return `<div class="item-card" data-open-file="${item.id}">
-      <div class="item-actions">
-        <button class="mini-btn star ${item.starred?"on":""}" data-star="${item.id}" title="Star">★</button>
-        <button class="mini-btn" data-dl="${item.id}" title="Download">⬇</button>
-        <button class="mini-btn" data-rename="${item.id}" data-rename-type="file" title="Rename">✎</button>
-        <button class="mini-btn" data-del="${item.id}" data-del-type="file" title="Delete">🗑</button>
-      </div>
-      ${iconChip(item, false)}
-      <div class="item-name">${escapeHtml(item.name)}</div>
-      <div class="item-meta">${formatBytes(item.size)}</div>
-    </div>`;
-  }
-
-  function renderListRow(item){
-    if(item.__type==="folder"){
-      const count = files.filter(f=>f.folderId===item.id).length + folders.filter(f=>f.parentId===item.id).length;
-      return `<div class="item-list-row" data-open-folder="${item.id}">
-        ${iconChip(item, true)}
-        <div class="flex1"><div class="item-name">${escapeHtml(item.name)}</div><div class="item-meta">${count} item${count===1?"":"s"}</div></div>
-        <div class="item-actions">
-          <button class="mini-btn" data-rename="${item.id}" data-rename-type="folder" title="Rename">✎</button>
-          <button class="mini-btn" data-del="${item.id}" data-del-type="folder" title="Delete">🗑</button>
-        </div>
-      </div>`;
-    }
-    return `<div class="item-list-row" data-open-file="${item.id}">
-      ${iconChip(item, false)}
-      <div class="flex1"><div class="item-name">${escapeHtml(item.name)}</div><div class="item-meta">${formatBytes(item.size)} · ${timeAgo(item.createdAt)}</div></div>
-      <div class="item-actions">
-        <button class="mini-btn star ${item.starred?"on":""}" data-star="${item.id}" title="Star">★</button>
-        <button class="mini-btn" data-dl="${item.id}" title="Download">⬇</button>
-        <button class="mini-btn" data-rename="${item.id}" data-rename-type="file" title="Rename">✎</button>
-        <button class="mini-btn" data-del="${item.id}" data-del-type="file" title="Delete">🗑</button>
-      </div>
-    </div>`;
-  }
-
-  function renderActivity(){
-    const c = document.getElementById("activityContainer");
-    if(activityLog.length===0){
-      c.innerHTML = `<div class="empty-state">No activity yet — upload a file to get started</div>`;
-      return;
-    }
-    c.innerHTML = activityLog.slice(0,40).map(a => `
-      <div class="activity-item" style="border-left-color:${a.color}">
-        <span class="activity-dot" style="background:${a.color}"></span>
-        <div><div class="activity-text">${escapeHtml(a.text)}</div><div class="activity-time">${timeAgo(a.ts)}</div></div>
-      </div>`).join("");
-  }
-
-  async function updateStats(){
-    document.getElementById("statFiles").textContent = files.length;
-    document.getElementById("statFolders").textContent = Math.max(folders.length-1, 0);
-    document.getElementById("statStarred").textContent = files.filter(f=>f.starred).length;
-    const totalBytes = files.reduce((s,f)=>s+(f.size||0),0);
-    document.getElementById("statStorage").textContent = formatBytes(totalBytes);
-
-    let quotaLabel = formatBytes(totalBytes) + " used by files";
-    let pct = 0;
-    if(navigator.storage && navigator.storage.estimate){
-      try{
-        const est = await navigator.storage.estimate();
-        if(est.quota){
-          pct = Math.min(100, (est.usage/est.quota)*100);
-          quotaLabel = `${formatBytes(est.usage||0)} of ${formatBytes(est.quota)} browser quota used`;
-        }
-      }catch(e){}
-    }
-    document.getElementById("quotaFill").style.width = pct + "%";
-    document.getElementById("quotaLabel").textContent = quotaLabel;
-  }
-
-  /* ---------- Actions ---------- */
-  async function handleFiles(fileList){
-    const list = Array.from(fileList);
-    for(const f of list){
-      const record = { id: uid(), name: f.name, type: f.type || "application/octet-stream", size: f.size,
-        blob: f, folderId: currentFolderId, starred: false, createdAt: Date.now() };
-      await put("files", record);
-      files.push(record);
-      logActivity(`Uploaded "${f.name}"`, "var(--blue)");
-    }
-    toast(`${list.length} file${list.length===1?"":"s"} uploaded`);
-    renderFiles();
-  }
-
-  function downloadFile(id){
-    const f = files.find(x=>x.id===id);
-    if(!f) return;
-    const url = URL.createObjectURL(f.blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = f.name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 2000);
-    logActivity(`Downloaded "${f.name}"`, "var(--teal)");
-  }
-
-  async function toggleStar(id){
-    const f = files.find(x=>x.id===id);
-    if(!f) return;
-    f.starred = !f.starred;
-    await put("files", f);
-    logActivity(`${f.starred?"Starred":"Unstarred"} "${f.name}"`, "var(--orange)");
-    renderFiles();
-  }
-
-  async function deleteItem(id, type){
-    if(type==="file"){
-      const f = files.find(x=>x.id===id);
-      if(!f) return;
-      if(!confirm(`Delete "${f.name}"? This can't be undone.`)) return;
-      await del("files", id);
-      files = files.filter(x=>x.id!==id);
-      logActivity(`Deleted "${f.name}"`, "var(--red)");
-    } else {
-      const fo = folders.find(x=>x.id===id);
-      if(!fo) return;
-      if(!confirm(`Delete folder "${fo.name}" and everything inside it? This can't be undone.`)) return;
-      await deleteFolderRecursive(id);
-      logActivity(`Deleted folder "${fo.name}"`, "var(--red)");
-    }
-    toast("Deleted");
-    renderFiles();
-  }
-
-  async function deleteFolderRecursive(folderId){
-    const childFiles = files.filter(f=>f.folderId===folderId);
-    for(const f of childFiles){ await del("files", f.id); }
-    files = files.filter(f=>f.folderId!==folderId);
-
-    const childFolders = folders.filter(f=>f.parentId===folderId);
-    for(const cf of childFolders){ await deleteFolderRecursive(cf.id); }
-
-    await del("folders", folderId);
-    folders = folders.filter(f=>f.id!==folderId);
-  }
-
-  function renameItem(id, type){
-    const item = type==="file" ? files.find(x=>x.id===id) : folders.find(x=>x.id===id);
-    if(!item) return;
-    showModal({
-      title: `Rename ${type}`,
-      placeholder: "Enter a new name",
-      value: item.name,
-      confirmLabel: "Rename",
-      onConfirm: async (val)=>{
-        if(!val.trim()) return;
-        item.name = val.trim();
-        await put(type==="file"?"files":"folders", item);
-        logActivity(`Renamed to "${item.name}"`, "var(--orange)");
-        renderFiles();
-      }
-    });
-  }
-
-  function createFolder(){
-    showModal({
-      title: "New folder",
-      placeholder: "Folder name",
-      value: "",
-      confirmLabel: "Create",
-      onConfirm: async (val)=>{
-        if(!val.trim()) return;
-        const folder = { id: uid(), name: val.trim(), parentId: currentFolderId, createdAt: Date.now() };
-        await put("folders", folder);
-        folders.push(folder);
-        logActivity(`Created folder "${folder.name}"`, "var(--purple)");
-        toast("Folder created");
-        renderFiles();
-      }
-    });
-  }
-
-  /* ---------- Modal ---------- */
-  function showModal({title, placeholder, value, confirmLabel, onConfirm}){
-    const overlay = document.getElementById("modalOverlay");
-    const box = document.getElementById("modalBox");
-    box.className = "modal-box";
-    box.innerHTML = `
-      <h3>${escapeHtml(title)}</h3>
-      <input type="text" id="modalInput" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(value||"")}">
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="modalCancel">Cancel</button>
-        <button class="btn btn-primary" id="modalConfirm">${escapeHtml(confirmLabel)}</button>
-      </div>`;
-    overlay.classList.add("show");
-    const input = document.getElementById("modalInput");
-    input.focus(); input.select();
-    const close = ()=> overlay.classList.remove("show");
-    document.getElementById("modalCancel").onclick = close;
-    document.getElementById("modalConfirm").onclick = ()=>{ onConfirm(input.value); close(); };
-    input.onkeydown = (e)=>{ if(e.key==="Enter"){ onConfirm(input.value); close(); } if(e.key==="Escape") close(); };
-  }
-
-  async function openPreview(id){
-    const f = files.find(x=>x.id===id);
-    if(!f) return;
-    const overlay = document.getElementById("modalOverlay");
-    const box = document.getElementById("modalBox");
-    box.className = "modal-box preview";
-    box.innerHTML = `
-      <h3>${escapeHtml(f.name)}</h3>
-      <div class="preview-body" id="previewBody">Loading preview…</div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="modalClose">Close</button>
-        <button class="btn btn-primary" id="modalDownload">Download</button>
-      </div>`;
-    overlay.classList.add("show");
-    document.getElementById("modalClose").onclick = ()=> overlay.classList.remove("show");
-    document.getElementById("modalDownload").onclick = ()=> downloadFile(f.id);
-
-    const body = document.getElementById("previewBody");
-    const url = URL.createObjectURL(f.blob);
-    if(f.type.startsWith("image/")){
-      body.innerHTML = `<img src="${url}" alt="${escapeHtml(f.name)}">`;
-    } else if(f.type === "application/pdf"){
-      body.innerHTML = `<iframe src="${url}"></iframe>`;
-    } else if(f.type.startsWith("text/") || /\.(txt|md|json|csv|log)$/i.test(f.name)){
-      try{
-        const text = await f.blob.text();
-        const pre = document.createElement("pre");
-        pre.textContent = text.slice(0, 20000);
-        body.innerHTML = ""; body.appendChild(pre);
-      }catch(e){ body.innerHTML = `<div>No preview available.</div>`; }
-    } else {
-      body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--slate-500)">
-        <div style="font-size:13px;margin-bottom:4px">No inline preview for this file type</div>
-        <div style="font-size:12px">${formatBytes(f.size)} · ${f.type || "unknown type"}</div>
-      </div>`;
-    }
-  }
-
-  /* ---------- Export ---------- */
-  function exportCSV(){
-    const rows = [["Name","Folder","Size (bytes)","Type","Added"]];
-    files.forEach(f=>{
-      const folder = folders.find(fo=>fo.id===f.folderId);
-      rows.push([f.name, folder?folder.name:"", f.size, f.type, new Date(f.createdAt).toISOString()]);
-    });
-    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], {type:"text/csv"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "file-inventory.csv";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 2000);
-    toast("Inventory exported");
-  }
-
-  async function clearAll(){
-    if(!confirm("This will permanently delete ALL files and folders stored by this dashboard. Continue?")) return;
-    if(!confirm("Are you absolutely sure? This cannot be undone.")) return;
-    for(const f of files) await del("files", f.id);
-    for(const fo of folders) if(fo.id!=="root") await del("folders", fo.id);
-    for(const a of activityLog) await del("activity", a.id);
-    files = []; activityLog = [];
-    folders = folders.filter(f=>f.id==="root");
-    currentFolderId = "root";
-    toast("All data cleared");
-    renderFiles(); renderActivity(); updateStats();
-  }
-
-  /* ---------- Wire up ---------- */
-  function initEvents(){
-    document.querySelectorAll(".pill").forEach(p=>{
-      p.addEventListener("click", ()=>{
-        document.querySelectorAll(".pill").forEach(x=>x.classList.remove("active"));
-        p.classList.add("active");
-        document.getElementById(p.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
-      });
-    });
-
-    document.getElementById("uploadBtn").addEventListener("click", ()=> document.getElementById("fileInput").click());
-    document.getElementById("fileInput").addEventListener("change", (e)=>{ if(e.target.files.length) handleFiles(e.target.files); e.target.value=""; });
-    document.getElementById("newFolderBtn").addEventListener("click", createFolder);
-
-    const dz = document.getElementById("dropzone");
-    dz.addEventListener("click", ()=> document.getElementById("fileInput").click());
-    ["dragenter","dragover"].forEach(ev => dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add("drag"); }));
-    ["dragleave","drop"].forEach(ev => dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove("drag"); }));
-    dz.addEventListener("drop", e=>{ e.stopPropagation(); if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
-
-    document.getElementById("gridBtn").addEventListener("click", ()=>{ viewMode="grid"; document.getElementById("gridBtn").classList.add("active"); document.getElementById("listBtn").classList.remove("active"); renderFiles(); });
-    document.getElementById("listBtn").addEventListener("click", ()=>{ viewMode="list"; document.getElementById("listBtn").classList.add("active"); document.getElementById("gridBtn").classList.remove("active"); renderFiles(); });
-
-    document.getElementById("searchInput").addEventListener("input", (e)=>{ searchQuery = e.target.value.trim(); renderFiles(); });
-
-    document.getElementById("exportBtn").addEventListener("click", exportCSV);
-    document.getElementById("clearAllBtn").addEventListener("click", clearAll);
-
-    document.getElementById("modalOverlay").addEventListener("click", (e)=>{ if(e.target.id==="modalOverlay") e.currentTarget.classList.remove("show"); });
-    document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") document.getElementById("modalOverlay").classList.remove("show"); });
-
-    // whole-page drag & drop into current folder from anywhere within the Files panel
-    const filesPanel = document.querySelector("#files .panel");
-    ["dragenter","dragover"].forEach(ev => filesPanel.addEventListener(ev, e=> e.preventDefault()));
-    filesPanel.addEventListener("drop", e=>{ e.preventDefault(); if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
-  }
-
-  /* ---------- Init ---------- */
-  async function init(){
-    try{
-      db = await openDB();
-      await loadAll();
-    }catch(e){
-      toast("Storage unavailable in this browser context");
-      console.error(e);
-    }
-    initEvents();
-    renderFiles();
-    renderActivity();
-    updateStats();
-  }
-
-  document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", init);
 })();
 </script>
 </body>
