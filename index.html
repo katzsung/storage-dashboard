@@ -43,6 +43,39 @@
   .storage-btn{border:none;background:var(--slate-100);color:var(--slate-700);width:36px;height:36px;border-radius:10px;
     display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:6px;}
   .storage-btn:hover{background:var(--slate-200);}
+  .customer-switcher{border:1.5px solid var(--purple);background:var(--purple-light);color:var(--purple);
+    display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;font-size:12.5px;font-weight:700;
+    cursor:pointer;flex-shrink:0;white-space:nowrap;max-width:200px;}
+  .customer-switcher:hover{background:#e3d5fc;}
+  .customer-switcher span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;}
+  .customer-switcher.none{border-color:var(--slate-300);background:var(--slate-100);color:var(--slate-500);}
+
+  /* Customer chips inside branch bodies */
+  .customer-context{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:9px 12px;
+    border-radius:10px;background:#fff;border:1px solid var(--slate-200);font-size:12px;}
+  .customer-context.warn{border-color:#fcd34d;background:#fffbeb;color:#92400e;font-weight:600;}
+  .customer-context .switch-link{color:var(--purple);font-weight:700;cursor:pointer;text-decoration:underline;}
+  .doc-customer-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;
+    border-radius:999px;background:var(--slate-100);color:var(--slate-700);flex-shrink:0;white-space:nowrap;}
+  .doc-customer-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .doc-dropzone.disabled{opacity:.55;cursor:not-allowed;}
+  .doc-filter{width:100%;padding:8px 11px;border:1px solid var(--slate-200);border-radius:9px;font-size:12px;
+    margin-bottom:10px;outline:none;}
+  .doc-filter:focus{border-color:var(--purple);}
+
+  /* Customers modal list */
+  .cust-row{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--slate-200);border-radius:10px;margin-bottom:8px;cursor:pointer;}
+  .cust-row:hover{border-color:var(--purple);background:var(--purple-light);}
+  .cust-row.active{border-color:var(--purple);background:var(--purple-light);}
+  .cust-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:12px;color:#fff;flex-shrink:0;}
+  .cust-info{flex:1;min-width:0;}
+  .cust-info .cname{font-size:13px;font-weight:700;}
+  .cust-info .cmeta{font-size:11px;color:var(--slate-500);}
+  .cust-actions{display:flex;gap:4px;}
+  .cust-form{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--slate-200);}
+  .cust-form input{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;}
+  .cust-form input:focus{border-color:var(--purple);}
 
   .container{max-width:1240px;margin:0 auto;padding:0 24px 90px;}
   .tabpage{display:none;}
@@ -205,6 +238,11 @@
     <button class="navtab" data-tab="revenue-billing">Revenue &amp; Billing</button>
     <button class="navtab" data-tab="customer-support">Customer Support</button>
     <div class="nav-spacer"></div>
+    <button class="customer-switcher none" id="customerSwitcherBtn" title="Active customer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="customerSwitcherLabel">Select customer</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
     <button class="storage-btn" id="storageBtn" title="Storage &amp; activity">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
     </button>
@@ -383,8 +421,11 @@ function openDB(){
       if(!d.objectStoreNames.contains("files")){
         const fs = d.createObjectStore("files", {keyPath:"id"});
         fs.createIndex("folderId","folderId");
+        fs.createIndex("customerId","customerId");
       }
       if(!d.objectStoreNames.contains("activity")) d.createObjectStore("activity", {keyPath:"id"});
+      if(!d.objectStoreNames.contains("customers")) d.createObjectStore("customers", {keyPath:"id"});
+      if(!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", {keyPath:"key"});
     };
     req.onsuccess = e=>resolve(e.target.result);
     req.onerror = e=>reject(e.target.error);
@@ -397,6 +438,12 @@ function getAll(store){ return new Promise((res,rej)=>{ const r=tx(store,"readon
 
 let files = [];
 let activityLog = [];
+let customers = [];
+let activeCustomerId = null;
+const CUSTOMER_COLORS = ["purple","blue","green","orange","teal","red"];
+function customerColor(id){ if(!id) return "var(--slate-500)"; let h=0; for(let i=0;i<id.length;i++) h=(h*31+id.charCodeAt(i))>>>0; return COLORS[CUSTOMER_COLORS[h%CUSTOMER_COLORS.length]].c; }
+function customerById(id){ return customers.find(c=>c.id===id); }
+function customerLabel(id){ const c = customerById(id); return c ? c.name : "Unassigned"; }
 const uid = ()=> (crypto.randomUUID ? crypto.randomUUID() : "id-"+Date.now()+"-"+Math.random().toString(16).slice(2));
 
 function formatBytes(b){ if(!b) return "0 B"; const u=["B","KB","MB","GB"]; let i=0; while(b>=1024&&i<u.length-1){b/=1024;i++;} return (i===0?b:b.toFixed(1))+" "+u[i]; }
@@ -554,48 +601,76 @@ let activeBranchForUpload = null;
 
 function branchFiles(bid){ return files.filter(f=>f.folderId===bid); }
 
-function renderDocBody(bid){
+function renderDocBody(bid, filterText){
+  filterText = (filterText||"").toLowerCase();
   const list = branchFiles(bid);
   const countEl = document.querySelector(`[data-count="${bid}"]`);
   if(countEl) countEl.textContent = list.length+" document"+(list.length===1?"":"s");
   const body = document.querySelector(`[data-body="${bid}"]`);
   if(!body) return;
+
+  const shown = list.filter(f=> !filterText || f.name.toLowerCase().includes(filterText) || customerLabel(f.customerId).toLowerCase().includes(filterText));
+  const hasActive = !!activeCustomerId;
+  const activeName = hasActive ? customerLabel(activeCustomerId) : "";
+
   body.innerHTML = `
-    <div class="doc-dropzone" data-dz="${bid}">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <span>Drag &amp; drop or click to upload documents for this branch</span>
+    <div class="customer-context ${hasActive?'':'warn'}">
+      ${hasActive
+        ? `<span class="doc-customer-dot" style="background:${customerColor(activeCustomerId)}"></span> Uploading as <strong>${esc(activeName)}</strong> — <span class="switch-link" data-switch-customer="1">switch customer</span>`
+        : `⚠ No customer selected — <span class="switch-link" data-switch-customer="1">choose a customer</span> before uploading`}
     </div>
-    <div class="doc-list">${list.length ? list.map(f=>`
+    <div class="doc-dropzone ${hasActive?'':'disabled'}" data-dz="${bid}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>${hasActive ? `Drag &amp; drop or click to upload documents for <strong>${esc(activeName)}</strong>` : "Select a customer above to enable uploads"}</span>
+    </div>
+    ${list.length>3 ? `<input type="text" class="doc-filter" data-filter="${bid}" placeholder="Filter by document or customer name..." value="${esc(filterText)}">` : ""}
+    <div class="doc-list">${shown.length ? shown.map(f=>`
       <div class="doc-row">
         <div class="doc-chip" style="background:var(--slate-200);color:var(--slate-700)">${esc(extOf(f.name))}</div>
-        <div class="flex1"><div class="doc-name">${esc(f.name)}</div><div class="doc-meta">${formatBytes(f.size)} · ${timeAgo(f.createdAt)}</div></div>
+        <div class="flex1">
+          <div class="doc-name">${esc(f.name)}</div>
+          <div class="doc-meta">${formatBytes(f.size)} · ${timeAgo(f.createdAt)}</div>
+        </div>
+        <span class="doc-customer-tag"><span class="doc-customer-dot" style="background:${customerColor(f.customerId)}"></span>${esc(customerLabel(f.customerId))}</span>
         <div class="doc-actions">
           <button class="mini-btn" data-dl="${f.id}" title="Download">⬇</button>
           <button class="mini-btn" data-del="${f.id}" data-belongs="${bid}" title="Delete">🗑</button>
         </div>
-      </div>`).join("") : `<div class="doc-empty">No documents stored yet for this branch.</div>`}
+      </div>`).join("") : `<div class="doc-empty">${list.length ? "No documents match that filter." : "No documents stored yet for this branch."}</div>`}
     </div>`;
 
   const dz = body.querySelector(`[data-dz]`);
-  dz.addEventListener("click", ()=>{ activeBranchForUpload = bid; document.getElementById("fileInput").click(); });
-  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add("drag"); }));
+  dz.addEventListener("click", ()=>{
+    if(!activeCustomerId){ openCustomerModal(bid); return; }
+    activeBranchForUpload = bid; document.getElementById("fileInput").click();
+  });
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); if(activeCustomerId) dz.classList.add("drag"); }));
   ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove("drag"); }));
-  dz.addEventListener("drop", e=>{ if(e.dataTransfer.files.length) handleBranchFiles(bid, e.dataTransfer.files); });
+  dz.addEventListener("drop", e=>{ if(!activeCustomerId){ openCustomerModal(bid); return; } if(e.dataTransfer.files.length) handleBranchFiles(bid, e.dataTransfer.files); });
+
+  body.querySelectorAll("[data-switch-customer]").forEach(el=>el.addEventListener("click",()=>openCustomerModal(bid)));
+  const filterInput = body.querySelector("[data-filter]");
+  if(filterInput){
+    filterInput.addEventListener("input", e=>renderDocBody(bid, e.target.value));
+    if(filterText){ filterInput.focus(); filterInput.setSelectionRange(filterText.length, filterText.length); }
+  }
 
   body.querySelectorAll("[data-dl]").forEach(b=>b.addEventListener("click",(e)=>{ e.stopPropagation(); downloadFile(b.dataset.dl); }));
   body.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",(e)=>{ e.stopPropagation(); deleteFile(b.dataset.del, b.dataset.belongs); }));
 }
 
 async function handleBranchFiles(bid, fileList){
+  if(!activeCustomerId){ toast("Select a customer first"); openCustomerModal(bid); return; }
   const list = Array.from(fileList);
   for(const f of list){
-    const record = {id:uid(), name:f.name, type:f.type||"application/octet-stream", size:f.size, blob:f, folderId:bid, createdAt:Date.now()};
+    const record = {id:uid(), name:f.name, type:f.type||"application/octet-stream", size:f.size, blob:f, folderId:bid, customerId:activeCustomerId, createdAt:Date.now()};
     await put("files", record);
     files.push(record);
   }
   const label = branchLabel(bid);
-  logActivity(`Uploaded ${list.length} document${list.length===1?"":"s"} to "${label}"`, "var(--blue)");
-  toast(`${list.length} document${list.length===1?"":"s"} uploaded`);
+  const cname = customerLabel(activeCustomerId);
+  logActivity(`Uploaded ${list.length} document${list.length===1?"":"s"} to "${label}" for ${cname}`, "var(--blue)");
+  toast(`${list.length} document${list.length===1?"":"s"} uploaded for ${cname}`);
   renderDocBody(bid);
   updateStorageStats();
 }
@@ -652,13 +727,18 @@ function openStorageModal(){
   box.innerHTML = `
     <button class="modal-close" id="modalCloseBtn">✕</button>
     <h3>Storage &amp; Activity</h3>
-    <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px;">
+    <div class="stat-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
       <div class="stat-card"><div class="stat-num" id="aggDocs">${totalDocs}</div><div class="stat-label">Documents</div></div>
       <div class="stat-card"><div class="stat-num" id="aggSize">${formatBytes(totalBytes)}</div><div class="stat-label">Storage used</div></div>
       <div class="stat-card"><div class="stat-num" id="aggBranches">${branchesUsed}</div><div class="stat-label">Branches with docs</div></div>
+      <div class="stat-card"><div class="stat-num" id="aggCustomers">${customers.length}</div><div class="stat-label">Customers</div></div>
     </div>
     <div class="settings-row">
-      <div><h4>Export document inventory</h4><p>CSV list of every stored document and its branch.</p></div>
+      <div><h4>Manage customers</h4><p>Add, switch, or remove customers in your client database.</p></div>
+      <button class="btn btn-ghost" id="manageCustBtn">Open</button>
+    </div>
+    <div class="settings-row">
+      <div><h4>Export document inventory</h4><p>CSV list of every stored document, its branch, and customer.</p></div>
       <button class="btn btn-ghost" id="exportBtn">Export</button>
     </div>
     <div class="settings-row">
@@ -672,6 +752,7 @@ function openStorageModal(){
   document.getElementById("modalCloseBtn").onclick = closeModal;
   document.getElementById("exportBtn").onclick = exportCSV;
   document.getElementById("clearAllBtn").onclick = clearAll;
+  document.getElementById("manageCustBtn").onclick = ()=>openCustomerModal();
   overlay.classList.add("show");
 }
 
@@ -687,8 +768,8 @@ function renderActivityList(){
 }
 
 function exportCSV(){
-  const rows = [["Branch","Document Name","Size (bytes)","Type","Added"]];
-  files.forEach(f=> rows.push([branchLabel(f.folderId), f.name, f.size, f.type, new Date(f.createdAt).toISOString()]));
+  const rows = [["Customer","Branch","Document Name","Size (bytes)","Type","Added"]];
+  files.forEach(f=> rows.push([customerLabel(f.customerId), branchLabel(f.folderId), f.name, f.size, f.type, new Date(f.createdAt).toISOString()]));
   const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], {type:"text/csv"});
   const url = URL.createObjectURL(blob);
@@ -699,11 +780,14 @@ function exportCSV(){
 }
 
 async function clearAll(){
-  if(!confirm("This will permanently delete ALL stored documents. Continue?")) return;
+  if(!confirm("This will permanently delete ALL stored documents and customers. Continue?")) return;
   if(!confirm("Are you absolutely sure? This cannot be undone.")) return;
   for(const f of files) await del("files", f.id);
   for(const a of activityLog) await del("activity", a.id);
-  files = []; activityLog = [];
+  for(const c of customers) await del("customers", c.id);
+  await put("meta", {key:"activeCustomerId", value:null});
+  files = []; activityLog = []; customers = []; activeCustomerId = null;
+  updateCustomerSwitcherUI();
   toast("All data cleared");
   closeModal();
   document.querySelectorAll(".branch-card").forEach(card=>{
@@ -715,6 +799,112 @@ async function clearAll(){
 }
 
 function closeModal(){ document.getElementById("modalOverlay").classList.remove("show"); }
+
+/* ============================== Customers (client CRM) ============================== */
+function customerDocCount(id){ return files.filter(f=>f.customerId===id).length; }
+
+function updateCustomerSwitcherUI(){
+  const btn = document.getElementById("customerSwitcherBtn");
+  const label = document.getElementById("customerSwitcherLabel");
+  if(activeCustomerId && customerById(activeCustomerId)){
+    label.textContent = customerById(activeCustomerId).name;
+    btn.classList.remove("none");
+  } else {
+    label.textContent = "Select customer";
+    btn.classList.add("none");
+    activeCustomerId = null;
+  }
+}
+
+async function setActiveCustomer(id){
+  activeCustomerId = id;
+  await put("meta", {key:"activeCustomerId", value:id});
+  updateCustomerSwitcherUI();
+  document.querySelectorAll(".branch-card.open").forEach(card=>renderDocBody(card.dataset.branch));
+}
+
+async function addCustomerRecord(name, company, email){
+  const rec = {id:uid(), name:name.trim(), company:(company||"").trim(), email:(email||"").trim(), createdAt:Date.now()};
+  await put("customers", rec);
+  customers.push(rec);
+  logActivity(`Added customer "${rec.name}"`, "var(--purple)");
+  return rec;
+}
+
+async function deleteCustomerRecord(id){
+  const c = customerById(id); if(!c) return;
+  const docCount = customerDocCount(id);
+  const msg = docCount>0
+    ? `Delete "${c.name}"? Their ${docCount} document${docCount===1?"":"s"} will be kept but marked Unassigned.`
+    : `Delete "${c.name}"?`;
+  if(!confirm(msg)) return;
+  await del("customers", id);
+  customers = customers.filter(x=>x.id!==id);
+  if(activeCustomerId===id){ activeCustomerId=null; await put("meta",{key:"activeCustomerId", value:null}); }
+  logActivity(`Deleted customer "${c.name}"`, "var(--red)");
+  updateCustomerSwitcherUI();
+  openCustomerModal();
+}
+
+function openCustomerModal(returnBid){
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "customers";
+  box.style.width = "440px";
+  const search = "";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Customers</h3>
+    <input type="text" id="custSearch" placeholder="Search customers..." style="margin-bottom:12px;">
+    <div id="custList"></div>
+    <div class="cust-form">
+      <input type="text" id="custName" placeholder="Customer / company name *">
+      <input type="text" id="custCompany" placeholder="Company (optional)">
+      <input type="text" id="custEmail" placeholder="Email (optional)">
+      <button class="btn btn-primary" id="custAddBtn" style="justify-content:center;">+ Add customer</button>
+    </div>
+  `;
+  overlay.classList.add("show");
+
+  function renderList(filterText){
+    filterText = (filterText||"").toLowerCase();
+    const list = customers.filter(c=> !filterText || c.name.toLowerCase().includes(filterText) || (c.company||"").toLowerCase().includes(filterText));
+    const c1 = document.getElementById("custList");
+    if(!list.length){ c1.innerHTML = `<div class="doc-empty">${customers.length ? "No matches." : "No customers yet — add one below."}</div>`; return; }
+    c1.innerHTML = list.map(c=>{
+      const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+      const dc = customerDocCount(c.id);
+      return `<div class="cust-row ${c.id===activeCustomerId?'active':''}" data-select="${c.id}">
+        <div class="cust-avatar" style="background:${customerColor(c.id)}">${esc(initials)}</div>
+        <div class="cust-info"><div class="cname">${esc(c.name)}</div><div class="cmeta">${esc(c.company||"")}${c.company?" · ":""}${dc} document${dc===1?"":"s"}</div></div>
+        <div class="cust-actions"><button class="mini-btn" data-del-cust="${c.id}" title="Delete">🗑</button></div>
+      </div>`;
+    }).join("");
+    c1.querySelectorAll("[data-select]").forEach(el=>el.addEventListener("click", (e)=>{
+      if(e.target.closest("[data-del-cust]")) return;
+      setActiveCustomer(el.dataset.select);
+      closeModal();
+      if(returnBid) renderDocBody(returnBid);
+    }));
+    c1.querySelectorAll("[data-del-cust]").forEach(el=>el.addEventListener("click", (e)=>{ e.stopPropagation(); deleteCustomerRecord(el.dataset.delCust); }));
+  }
+  renderList(search);
+
+  document.getElementById("custSearch").addEventListener("input", e=>renderList(e.target.value));
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("custAddBtn").onclick = async ()=>{
+    const nameEl = document.getElementById("custName");
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    const rec = await addCustomerRecord(name, document.getElementById("custCompany").value, document.getElementById("custEmail").value);
+    toast(`Customer "${rec.name}" added`);
+    setActiveCustomer(rec.id);
+    document.getElementById("custName").value = "";
+    document.getElementById("custCompany").value = "";
+    document.getElementById("custEmail").value = "";
+    renderList(document.getElementById("custSearch").value);
+  };
+}
 
 /* ============================== Tabs / navigation ============================== */
 const TABS = ["business-map","customer-acquisition","service-delivery","revenue-billing","customer-support"];
@@ -756,6 +946,7 @@ function initNav(){
     btn.addEventListener("click", ()=>switchTab(btn.dataset.tab));
   });
   document.getElementById("storageBtn").addEventListener("click", openStorageModal);
+  document.getElementById("customerSwitcherBtn").addEventListener("click", ()=>openCustomerModal());
   document.getElementById("modalOverlay").addEventListener("click", e=>{ if(e.target.id==="modalOverlay") closeModal(); });
   document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
   document.getElementById("fileInput").addEventListener("change", e=>{
@@ -770,12 +961,16 @@ async function init(){
     db = await openDB();
     files = await getAll("files");
     activityLog = (await getAll("activity")).sort((a,b)=>b.ts-a.ts);
+    customers = await getAll("customers");
+    const metaRow = await get("meta", "activeCustomerId");
+    if(metaRow && metaRow.value && customerById(metaRow.value)) activeCustomerId = metaRow.value;
   }catch(e){
     toast("Storage unavailable in this browser context");
     console.error(e);
   }
   renderAllPages();
   initNav();
+  updateCustomerSwitcherUI();
   switchTab("business-map");
 }
 
