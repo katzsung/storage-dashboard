@@ -220,6 +220,19 @@
   .wf-step p{margin:0;font-size:11px;color:var(--slate-500);}
   .wf-arrow{color:var(--slate-300);display:flex;align-items:center;flex-shrink:0;}
 
+  /* Process Flows (Business Map) */
+  .flow-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;}
+  .flow-col{display:flex;flex-direction:column;}
+  .flow-head{border-radius:14px 14px 0 0;padding:12px 16px;text-align:center;font-size:14px;font-weight:600;color:#fff;}
+  .flow-body{border-radius:0 0 14px 14px;border:1px solid;border-top:none;padding:12px;display:flex;flex-direction:column;align-items:center;}
+  .flow-step{width:100%;border-radius:10px;border:1px solid;background:#fff;padding:10px 12px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+  .flow-step p{font-size:12px;margin:0;}
+  .flow-step p:first-child{font-weight:600;}
+  .flow-step p:last-child:not(:first-child){margin-top:2px;font-weight:400;}
+  .flow-arrow{margin:4px 0;display:flex;justify-content:center;}
+  @media(max-width:900px){.flow-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.flow-grid{grid-template-columns:1fr;}}
+
   /* KPI grid */
   .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
   .kpi-card{border:1px solid var(--slate-200);border-radius:14px;padding:14px;background:#fff;}
@@ -455,8 +468,11 @@ const TAB_META = {
 const BUSINESS_MAP_ORG = n("CEO","Executive Management","purple",[
   n("Product Management","","blue",[
     n("Engineering & Development","","blue",[
-      n("Quality Assurance (QA)","","blue"),
-      n("DevOps & Cloud Infrastructure","","blue",[ n("Venue Operations","Camera Mgmt","blue") ])
+      n("Quality Assurance (QA)","","blue",[
+        n("DevOps & Cloud Infrastructure","","blue",[
+          n("Venue Operations","Camera Mgmt","blue")
+        ])
+      ])
     ])
   ]),
   n("Finance & Accounting","","green",[ n("Legal & Compliance","","green") ]),
@@ -464,10 +480,10 @@ const BUSINESS_MAP_ORG = n("CEO","Executive Management","purple",[
 ]);
 const BUSINESS_MAP_LEGEND = [["Executive","purple"],["Product & Tech","blue"],["Finance & Legal","green"],["Human Resources","orange"]];
 const BUSINESS_MAP_FLOWS = [
-  {title:"Customer Acquisition", color:"teal", steps:["Marketing","Sales","Customer Success","Onboarding"]},
-  {title:"Service Delivery", color:"purple", steps:["User Scans QR","Google Login","Select Camera (or Both Cameras)","Start Recording","Highlight Tags (During Match)","End Recording","Video Processing (Encoding)","Email Delivery (Video Links)","Customer Review & Sharing"]},
-  {title:"Customer Support", color:"red", steps:["Customer Support","Ticket Handling","Technical Escalation","Resolution","Customer Satisfaction"]},
-  {title:"Revenue & Billing", color:"green", steps:["Lead","Customer Purchase","Subscription Setup","Invoice Generation","Payment Collection","Revenue Recognition","Financial Reporting"]}
+  {title:"Customer Acquisition", color:"#0891b2", bg:"#ecfeff", steps:[["Marketing"],["Sales"],["Customer Success","Onboarding"]]},
+  {title:"Service Delivery", color:"#6d28d9", bg:"#f5f3ff", steps:[["User Scans QR"],["Google Login"],["Select Camera","or Both Cameras"],["Start Recording"],["Highlight Tags","During Match"],["End Recording"],["Video Processing","Encoding"],["Email Delivery","Video Links"],["Customer Review","& Sharing"]]},
+  {title:"Customer Support", color:"#dc2626", bg:"#fef2f2", steps:[["Customer Support"],["Ticket Handling"],["Technical Escalation"],["Resolution"],["Customer Satisfaction"]]},
+  {title:"Revenue & Billing", color:"#047857", bg:"#f0fdf4", steps:[["Lead"],["Customer Purchase"],["Subscription Setup"],["Invoice Generation"],["Payment Collection"],["Revenue Recognition"],["Financial Reporting"]]}
 ];
 
 /* ============================== IndexedDB ============================== */
@@ -668,12 +684,17 @@ function renderBusinessMap(){
     </div>
     <div class="section">
       <div class="section-head"><span class="section-bar"></span><h2>Process Flows</h2></div>
-      <div class="panel"><div class="workflow-wrap" style="display:flex;gap:24px;">
+      <div class="panel"><div class="flow-grid">
         ${BUSINESS_MAP_FLOWS.map(flow=>{
-          const c = COLORS[flow.color];
-          return `<div style="min-width:200px;border:1.5px solid ${c.c};border-radius:14px;padding:14px;background:${c.bg}22;">
-            <div style="font-weight:800;color:${c.c};font-size:13px;margin-bottom:10px;">${esc(flow.title)}</div>
-            ${flow.steps.map((s,i)=>`<div style="background:#fff;border:1px solid ${c.c}55;border-radius:8px;padding:8px 10px;font-size:11.5px;font-weight:700;margin-bottom:${i<flow.steps.length-1?'16px':'0'};position:relative;">${esc(s)}${i<flow.steps.length-1?`<div style="position:absolute;left:50%;bottom:-16px;width:1px;height:14px;background:${c.c}55;"></div>`:''}</div>`).join("")}
+          const arrow = `<div class="flow-arrow"><svg width="12" height="16" viewBox="0 0 12 16"><line x1="6" y1="0" x2="6" y2="9" stroke="#94a3b8" stroke-width="1.5"/><polygon points="1,9 11,9 6,16" fill="#94a3b8"/></svg></div>`;
+          return `<div class="flow-col">
+            <div class="flow-head" style="background:${flow.color};">${esc(flow.title)}</div>
+            <div class="flow-body" style="background:${flow.bg};border-color:${flow.color};">
+              ${flow.steps.map((lines,i)=>`<div class="flow-step" style="border-color:${flow.color}60;">
+                <p style="color:${flow.color};">${esc(lines[0])}</p>
+                ${lines[1]?`<p style="color:${flow.color}aa;">${esc(lines[1])}</p>`:""}
+              </div>${i<flow.steps.length-1?arrow:""}`).join("")}
+            </div>
           </div>`;
         }).join("")}
       </div></div>
