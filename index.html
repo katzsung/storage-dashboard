@@ -2275,6 +2275,35 @@ function openEditCustomerModal(customerId, onSaved){
   box.querySelectorAll("input").forEach(inp=>inp.addEventListener("keydown", e=>{ if(e.key==="Enter") save(); }));
 }
 
+function openEditNotesModal(customerId, onSaved){
+  const c = customerById(customerId); if(!c) return;
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "edit-notes";
+  box.style.width = "420px";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Notes — ${esc(c.name)}</h3>
+    <textarea id="editNotesTextarea" placeholder="Internal notes about this customer..." style="width:100%;padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:140px;line-height:1.5;">${esc(c.notes||"")}</textarea>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" id="editNotesCancel">Cancel</button>
+      <button class="btn btn-primary" id="editNotesSave">Save notes</button>
+    </div>
+  `;
+  overlay.classList.add("show");
+  const notesEl = document.getElementById("editNotesTextarea");
+  notesEl.focus();
+  notesEl.setSelectionRange(notesEl.value.length, notesEl.value.length);
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("editNotesCancel").onclick = closeModal;
+  document.getElementById("editNotesSave").onclick = async ()=>{
+    await updateCustomerRecord(customerId, c.name, c.company, c.email, c.phone, c.title, notesEl.value);
+    toast("Notes updated");
+    closeModal();
+    if(onSaved) onSaved();
+  };
+}
+
 /* ============================== Tabs / navigation ============================== */
 /* ============================== Customer Dashboard (main view) ============================== */
 let currentDashboardSearch = "";
@@ -2554,9 +2583,12 @@ function renderCustomerProfileBody(customerId){
     <div class="section-head"><span class="section-bar"></span><h2>Journey Summary</h2></div>
     ${renderJourneyStepper(customerId)}
 
-    <div class="section-head"><span class="section-bar"></span><h2>Notes</h2></div>
+    <div class="section-head">
+      <span class="section-bar"></span><h2>Notes</h2>
+      <button class="mini-btn" id="editNotesBtn" title="Edit notes" style="margin-left:auto;">✎</button>
+    </div>
     <div class="panel" style="margin-bottom:24px;">
-      ${c.notes ? `<div class="cust-notes-panel">${esc(c.notes)}</div>` : `<div class="cust-notes-empty">No notes yet. Click "Edit details" to add internal notes about this customer.</div>`}
+      ${c.notes ? `<div class="cust-notes-panel">${esc(c.notes)}</div>` : `<div class="cust-notes-empty">No notes yet. Click ✎ to add internal notes about this customer.</div>`}
     </div>
 
     <div class="section-head"><span class="section-bar"></span><h2>Add a Document</h2></div>
@@ -2576,6 +2608,7 @@ function renderCustomerProfileBody(customerId){
 
   document.getElementById("backToDash").addEventListener("click", ()=>{ currentProfileCustomerId = null; switchTab("dashboard"); });
   document.getElementById("editCustFromProfile").addEventListener("click", ()=>{ openEditCustomerModal(customerId, ()=>renderCustomerProfileBody(customerId)); });
+  document.getElementById("editNotesBtn").addEventListener("click", ()=>{ openEditNotesModal(customerId, ()=>renderCustomerProfileBody(customerId)); });
   document.getElementById("setActiveFromProfile").addEventListener("click", ()=>{ setActiveCustomer(customerId); toast(`${c.name} set as active customer`); });
   document.getElementById("deleteCustFromProfile").addEventListener("click", async ()=>{
     await deleteCustomerRecord(customerId);
