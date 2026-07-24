@@ -2118,6 +2118,20 @@ async function addCustomerRecord(name, company, email){
   return rec;
 }
 
+async function updateCustomerRecord(id, name, company, email){
+  const c = customerById(id); if(!c) return null;
+  const oldName = c.name;
+  c.name = name.trim();
+  c.company = (company||"").trim();
+  c.email = (email||"").trim();
+  await put("customers", c);
+  logActivity(oldName===c.name ? `Updated customer "${c.name}"` : `Renamed customer "${oldName}" to "${c.name}"`, "var(--purple)");
+  updateCustomerSwitcherUI();
+  refreshDashboardBody();
+  refreshProfileIfOpen();
+  return c;
+}
+
 async function deleteCustomerRecord(id){
   const c = customerById(id); if(!c) return;
   const docCount = customerDocCount(id);
@@ -2164,16 +2178,20 @@ function openCustomerModal(returnBid){
       return `<div class="cust-row ${c.id===activeCustomerId?'active':''}" data-select="${c.id}">
         <div class="cust-avatar" style="background:${customerColor(c.id)}">${esc(initials)}</div>
         <div class="cust-info"><div class="cname">${esc(c.name)}</div><div class="cmeta">${esc(c.company||"")}${c.company?" · ":""}${dc} document${dc===1?"":"s"}</div></div>
-        <div class="cust-actions"><button class="mini-btn" data-del-cust="${c.id}" title="Delete">🗑</button></div>
+        <div class="cust-actions">
+          <button class="mini-btn" data-edit-cust="${c.id}" title="Edit">✎</button>
+          <button class="mini-btn" data-del-cust="${c.id}" title="Delete">🗑</button>
+        </div>
       </div>`;
     }).join("");
     c1.querySelectorAll("[data-select]").forEach(el=>el.addEventListener("click", (e)=>{
-      if(e.target.closest("[data-del-cust]")) return;
+      if(e.target.closest("[data-del-cust]") || e.target.closest("[data-edit-cust]")) return;
       setActiveCustomer(el.dataset.select);
       closeModal();
       if(returnBid) renderDocBody(returnBid);
     }));
     c1.querySelectorAll("[data-del-cust]").forEach(el=>el.addEventListener("click", async (e)=>{ e.stopPropagation(); await deleteCustomerRecord(el.dataset.delCust); openCustomerModal(returnBid); }));
+    c1.querySelectorAll("[data-edit-cust]").forEach(el=>el.addEventListener("click", (e)=>{ e.stopPropagation(); openEditCustomerModal(el.dataset.editCust, ()=>openCustomerModal(returnBid)); }));
   }
   renderList(search);
 
@@ -2191,6 +2209,42 @@ function openCustomerModal(returnBid){
     document.getElementById("custEmail").value = "";
     renderList(document.getElementById("custSearch").value);
   };
+}
+
+function openEditCustomerModal(customerId, onSaved){
+  const c = customerById(customerId); if(!c) return;
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "edit-customer";
+  box.style.width = "380px";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Edit Customer</h3>
+    <div class="cust-form" style="margin-top:0;padding-top:0;border-top:none;">
+      <input type="text" id="editCustName" placeholder="Customer / company name *" value="${esc(c.name)}">
+      <input type="text" id="editCustCompany" placeholder="Company (optional)" value="${esc(c.company||"")}">
+      <input type="text" id="editCustEmail" placeholder="Email (optional)" value="${esc(c.email||"")}">
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" id="editCustCancel">Cancel</button>
+      <button class="btn btn-primary" id="editCustSave">Save changes</button>
+    </div>
+  `;
+  overlay.classList.add("show");
+  const nameEl = document.getElementById("editCustName");
+  nameEl.focus();
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("editCustCancel").onclick = closeModal;
+  const save = async ()=>{
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    await updateCustomerRecord(customerId, name, document.getElementById("editCustCompany").value, document.getElementById("editCustEmail").value);
+    toast("Customer updated");
+    closeModal();
+    if(onSaved) onSaved();
+  };
+  document.getElementById("editCustSave").onclick = save;
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("keydown", e=>{ if(e.key==="Enter") save(); }));
 }
 
 /* ============================== Tabs / navigation ============================== */
@@ -2459,6 +2513,7 @@ function renderCustomerProfileBody(customerId){
         <div class="meta">${esc(c.company||"No company")}${c.email?" · "+esc(c.email):""} · ${docs.length} document${docs.length===1?"":"s"} · ${formatBytes(totalBytes)}</div>
       </div>
       <div class="profile-actions">
+        <button class="btn btn-ghost" id="editCustFromProfile">✎ Edit details</button>
         <button class="btn btn-ghost" id="setActiveFromProfile">Set as active</button>
         <button class="btn btn-danger" id="deleteCustFromProfile">Delete customer</button>
       </div>
@@ -2483,6 +2538,7 @@ function renderCustomerProfileBody(customerId){
   `;
 
   document.getElementById("backToDash").addEventListener("click", ()=>{ currentProfileCustomerId = null; switchTab("dashboard"); });
+  document.getElementById("editCustFromProfile").addEventListener("click", ()=>{ openEditCustomerModal(customerId, ()=>renderCustomerProfileBody(customerId)); });
   document.getElementById("setActiveFromProfile").addEventListener("click", ()=>{ setActiveCustomer(customerId); toast(`${c.name} set as active customer`); });
   document.getElementById("deleteCustFromProfile").addEventListener("click", async ()=>{
     await deleteCustomerRecord(customerId);
