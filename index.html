@@ -195,12 +195,62 @@
     font-weight:800;font-size:12.5px;flex-shrink:0;}
   .branch-info{flex:1;min-width:0;}
   .branch-info h4{margin:0 0 4px;font-size:14px;}
+  .branch-desc{margin:0 0 7px;font-size:11.5px;color:var(--slate-500);line-height:1.45;}
   .branch-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;margin-right:6px;}
   .branch-doc-count{font-size:11px;color:var(--slate-500);font-weight:600;}
   .branch-chevron{transition:.2s;color:var(--slate-500);flex-shrink:0;}
   .branch-card.open .branch-chevron{transform:rotate(180deg);}
+  .branch-foot{padding:0 16px 16px;}
+  .branch-viewdoc-btn{width:100%;border:1px solid var(--slate-200);background:var(--slate-100);color:var(--slate-700);
+    border-radius:10px;padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;gap:6px;transition:.15s;}
+  .branch-viewdoc-btn:hover{background:var(--slate-200);}
   .branch-body{display:none;border-top:1px solid var(--slate-200);padding:16px;background:var(--slate-100);}
   .branch-card.open .branch-body{display:block;}
+
+  /* Document viewer modal */
+  .docmodal-header{display:flex;gap:14px;align-items:flex-start;margin:-22px -22px 0;padding:20px 46px 20px 22px;border-radius:16px 16px 0 0;}
+  .docmodal-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;flex-shrink:0;background:#fff;}
+  .docmodal-headtext{flex:1;min-width:0;}
+  .docmodal-headtext h3{margin:0 0 4px;font-size:17px;}
+  .docmodal-headtext p{margin:0 0 10px;font-size:12.5px;color:var(--slate-600);line-height:1.5;}
+  .docmodal-meta{display:flex;flex-wrap:wrap;gap:8px;}
+  .docmodal-chip{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#fff;
+    color:var(--slate-600);border:1px solid var(--slate-200);}
+  .docmodal-chip.status{background:var(--green);color:#fff;border-color:var(--green);}
+  .docmodal-tabs{display:flex;gap:4px;padding:14px 22px 0;border-bottom:1px solid var(--slate-200);margin:0 -22px;flex-wrap:wrap;}
+  .docmodal-tabbtn{border:none;background:transparent;padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--slate-500);
+    cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .docmodal-tabbtn.active{color:var(--purple);border-bottom-color:var(--purple);}
+  .docmodal-tabbtn:hover:not(.active){color:var(--slate-700);}
+  .docmodal-body{padding:18px 2px 4px;}
+  .docmodal-section{margin-bottom:22px;}
+  .docmodal-section:last-child{margin-bottom:0;}
+  .docmodal-section h5{font-size:12.5px;font-weight:800;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--purple);}
+  .doc-checklist{display:flex;flex-direction:column;gap:9px;}
+  .doc-check-row{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;}
+  .doc-check-box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--slate-300);flex-shrink:0;margin-top:1px;}
+  .doc-check-text{flex:1;color:var(--slate-700);line-height:1.45;}
+  .doc-check-tag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0;white-space:nowrap;}
+  .doc-check-tag.required{background:var(--red-light);color:#b91c1c;}
+  .doc-check-tag.automatic{background:var(--slate-200);color:var(--slate-600);}
+  .doc-table-wrap{overflow-x:auto;}
+  .doc-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .doc-table th{text-align:left;font-size:10.5px;font-weight:800;color:var(--slate-500);padding:8px 10px;
+    background:var(--slate-100);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;}
+  .doc-table td{padding:9px 10px;border-top:1px solid var(--slate-200);color:var(--slate-700);vertical-align:top;}
+  .doc-table-key{font-weight:700;color:var(--slate-900);white-space:nowrap;}
+  .doc-steps{display:flex;flex-direction:column;gap:14px;}
+  .doc-step-row{display:flex;gap:12px;}
+  .doc-step-num{width:24px;height:24px;border-radius:50%;background:var(--purple);color:#fff;font-weight:800;font-size:11.5px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .doc-step-title{font-size:12.5px;font-weight:700;color:var(--slate-900);}
+  .doc-step-desc{font-size:11.5px;color:var(--slate-500);margin-top:2px;line-height:1.45;}
+  .doc-milestones{display:flex;flex-direction:column;gap:14px;}
+  .doc-milestone-label{font-size:12px;font-weight:800;color:var(--purple);margin-bottom:6px;}
+  .doc-milestones ul{margin:0;padding-left:18px;}
+  .doc-milestones li{font-size:12px;color:var(--slate-700);margin-bottom:4px;line-height:1.45;}
 
   /* Document mini-manager (reused inside branch body) */
   .doc-dropzone{border:2px dashed var(--slate-300);border-radius:12px;padding:16px;text-align:center;cursor:pointer;
@@ -476,6 +526,999 @@ const BRANCH_SECTIONS = {
     {slug:"general-inquiries", mono:"GI", color:"teal", title:"General Inquiries", tag:"Tier 1"}
   ]}
 };
+function CL(title, items){ return {type:"checklist", title, items}; }
+function TB(title, cols, rows){ return {type:"table", title, cols, rows}; }
+function ST(title, items){ return {type:"steps", title, items}; }
+function ML(title, groups){ return {type:"milestones", title, groups}; }
+
+const TOPIC_DOCS = {
+/* ===================== CUSTOMER ACQUISITION ===================== */
+"customer-acquisition__lead-generation": {
+  desc:"Strategy and execution guide for driving inbound traffic and capturing qualified leads across all channels.",
+  meta:{version:"v1.8", updated:"Jul 2026", owner:"Marketing Manager", status:"Active"},
+  tabs:[
+    {name:"Content Strategy", sections:[
+      CL("Monthly Content Calendar", [
+        ["4 long-form blog posts targeting high-intent SEO keywords","Required"],
+        ["8 short-form social posts repurposed from blog content","Required"],
+        ["2 email newsletter editions with curated industry insights"],
+        ["1 in-depth case study or customer success feature","Required"],
+        ["1 webinar or virtual event per month"],
+        ["Monthly keyword research review and content gap analysis"]
+      ]),
+      CL("SEO Foundations Checklist", [
+        ["Target 3–5 primary keywords per page with search volume > 200/mo","Required"],
+        ["All pages have unique meta titles (50–60 chars) and descriptions (150–160 chars)","Required"],
+        ["Core Web Vitals: LCP < 2.5s, FID < 100ms, CLS < 0.1","Required"],
+        ["Internal linking from new content to 2–3 existing high-authority pages"],
+        ["Schema markup applied to blog posts and case studies"],
+        ["Monthly backlink audit — disavow toxic links over spam score threshold"]
+      ])
+    ]},
+    {name:"Paid Channels", sections:[
+      CL("Campaign Launch Checklist", [
+        ["Campaign objective aligned to funnel stage (Awareness / Consideration / Conversion)","Required"],
+        ["Audience segments configured: Remarketing, Lookalike, Cold ICP","Required"],
+        ["UTM parameters set on all ad URLs and landing pages","Required"],
+        ["Conversion tracking verified in GA4 and CRM before campaign goes live","Required"],
+        ["A/B test running on at least one creative element per ad set"],
+        ["Daily budget cap set; VP approval required for budgets over $500/day"]
+      ]),
+      TB("Budget & Channel Guidelines", ["Channel","Guideline"], [
+        ["Google Search","60% of paid budget; focus on bottom-funnel, high-intent keywords"],
+        ["LinkedIn Ads","25% of paid budget; target sports org decision-makers by title"],
+        ["Meta (Facebook / Instagram)","15% of budget; remarketing and lookalike audiences only"],
+        ["Max CPL target","$25 per lead; pause ad sets exceeding $40 CPL after 100 impressions"],
+        ["Frequency cap","Max 4 impressions per week per user on display/social"]
+      ])
+    ]},
+    {name:"Performance Tracking", sections:[
+      ST("Weekly Review Process", [
+        ["Pull lead volume by channel from CRM","Compare week-over-week; flag any channel showing > 20% drop"],
+        ["Review CPL by campaign and ad set","Pause underperformers; shift budget to top performers"],
+        ["Check MQL conversion rate from new leads","Target > 30%; alert Sales Manager if rate drops below 20%"],
+        ["Audit landing page conversion rates in GA4","Target > 3% for form submissions; raise to CRO queue if below 1.5%"],
+        ["Update lead gen dashboard and share with VP Growth","Every Monday by 9 AM; include narrative summary of key changes"]
+      ])
+    ]}
+  ]
+},
+"customer-acquisition__lead-qualification": {
+  desc:"Framework for scoring, qualifying, and routing leads from initial capture to SQL hand-off.",
+  meta:{version:"v2.1", updated:"Jul 2026", owner:"Marketing Manager", status:"Active"},
+  tabs:[
+    {name:"Qualification Criteria", sections:[
+      TB("BANT Scoring Framework", ["BANT Dimension","Qualifying Criteria"], [
+        ["Budget","Confirmed ability to spend > $200/mo; or manages 2+ venues"],
+        ["Authority","Contact is Operations Manager, Club Manager, or C-level"],
+        ["Need","Currently records manually, or uses a competitor product"],
+        ["Timeline","Looking to implement within 90 days"],
+        ["Score threshold","Score ≥ 70/100 to qualify as SQL; 40–69 = MQL for nurturing"]
+      ]),
+      CL("ICP Matching Checklist", [
+        ["Organisation manages at least 2 sports venues or facilities","Required"],
+        ["Team size 10+ players or club members (indicates recording demand)","Required"],
+        ["Sport type: football, basketball, hockey, rugby, tennis, or swimming"],
+        ["Located in a market where we have active camera hardware availability"],
+        ["Contact engaged with at least 2 marketing touchpoints (email open + page visit)"],
+        ["No existing competitor contract locked in for > 6 months"]
+      ])
+    ]},
+    {name:"MQL → SQL Handoff", sections:[
+      ST("Qualification & Routing Workflow", [
+        ["Lead enters CRM via form, chat, or import","Auto-assigned to Lead pool; initial BANT score calculated by CRM rules"],
+        ["Marketing reviews lead within 4 business hours","Confirm firmographic fit; enrich with LinkedIn and Clearbit data"],
+        ["Lead scored ≥ 70 → tagged as SQL","Assigned to next available SDR or AE via round-robin CRM rule"],
+        ["Lead scored 40–69 → tagged as MQL","Enrolled in 3-email nurture sequence; re-evaluated after 14 days"],
+        ["Lead scored < 40 → tagged as Unqualified","Added to cold list; eligible for re-engagement campaign after 90 days"],
+        ["SDR accepts or rejects SQL within 1 business hour","Rejection must include reason code; returns to Marketing queue"],
+        ["Marketing tracks MQL → SQL conversion rate monthly","Target > 40%; report to VP Growth in weekly lead gen review"]
+      ])
+    ]}
+  ]
+},
+"customer-acquisition__sales-development": {
+  desc:"SDR playbook for outbound prospecting, discovery, and pipeline handoff to Account Executives.",
+  meta:{version:"v3.0", updated:"Jul 2026", owner:"Sales Manager", status:"Active"},
+  tabs:[
+    {name:"Prospecting Playbook", sections:[
+      ST("Outreach Sequence (7-Touch Cadence)", [
+        ["Day 1 — Personalised intro email","Reference prospect's sport type and club size; 3-sentence max; clear CTA to book a call"],
+        ["Day 3 — LinkedIn connection request","No pitch in the request note; connect with a compliment or shared interest"],
+        ["Day 5 — Follow-up email with value asset","Send a relevant case study or 1-minute product highlight video"],
+        ["Day 7 — Cold call attempt","Opener: 'I noticed you manage [X] venues — are you currently capturing match video?'"],
+        ["Day 10 — LinkedIn message","Keep to 2 sentences; reference prior email or mutual connection if possible"],
+        ["Day 14 — Break-up email","Low-effort CTA: 'If timing is not right, happy to reconnect in Q3'"],
+        ["Day 21 — Final voicemail + move to cold","Log outcome in CRM; add to 90-day re-engagement campaign"]
+      ])
+    ]},
+    {name:"Discovery Calls", sections:[
+      CL("Pre-Call Preparation Checklist", [
+        ["Review all CRM history — prior emails, notes, lead source","Required"],
+        ["Check company LinkedIn for recent activity, size, and sports programs","Required"],
+        ["Identify the likely pain point using ICP profile","Required"],
+        ["Prepare 3 tailored open questions for the call"],
+        ["Set up Zoom or Teams call with recording enabled"],
+        ["Brief the AE if they are joining as a shadow"]
+      ]),
+      TB("Core Discovery Questions", ["Question","What to Listen For"], [
+        ["How are you currently capturing match footage?","Manual recording = strong pain; no recording = greenfield opportunity"],
+        ["Who else is involved in this decision?","Identify all stakeholders; flag if not on the call"],
+        ["What would success look like in 6 months?","Reveals ROI expectations; use in proposal"],
+        ["What has stopped you from solving this before?","Uncovers blockers: budget, tech fear, prior bad experience"],
+        ["What is your timeline for a decision?","Urgency signal; feeds BANT scoring"]
+      ])
+    ]}
+  ]
+},
+"customer-acquisition__demo-proposal": {
+  desc:"Sales process guide for delivering product demos and sending winning proposals.",
+  meta:{version:"v2.4", updated:"Jul 2026", owner:"Sales Manager", status:"Active"},
+  tabs:[
+    {name:"Pre-Demo Prep", sections:[
+      CL("Prospect Research", [
+        ["Research prospect's business — team size, venues, sports managed","Required"],
+        ["Review all prior CRM interactions, emails, and call notes","Required"],
+        ["Identify all attendees and confirm their decision-making authority","Required"],
+        ["Check if prospect has trialled any competitor products"],
+        ["Note prospect's sport type to customise the demo environment"]
+      ]),
+      CL("Technical & Logistics Setup", [
+        ["Build custom demo environment with prospect's sport and sample data","Required"],
+        ["Test screen share, audio, and camera before the session","Required"],
+        ["Prepare a backup pre-recorded screen recording for emergencies"],
+        ["Pre-write follow-up email template with personalised proposal"],
+        ["Set calendar alert to join the call 5 minutes early","Required"]
+      ])
+    ]},
+    {name:"Demo Agenda", sections:[
+      ST("45-Minute Session Plan", [
+        ["Welcome & Introductions (3 min)","Establish rapport; confirm attendees and their roles"],
+        ["Set the Agenda (2 min)","State objectives; confirm what the prospect wants to see"],
+        ["Discovery Recap (5 min)","Restate pain points from prior calls to show active listening"],
+        ["Platform Walkthrough (15 min)","QR scan → Google login → camera select → recording → tagging → email delivery"],
+        ["Feature Deep-Dive (10 min)","Multi-camera sync, custom highlight tags, sharing & highlights reel"],
+        ["ROI & Value Story (5 min)","Reference 2–3 comparable clubs; quantify time saved per event week"],
+        ["Q&A & Next Steps (5 min)","Handle objections with playbook; define clear, time-bound next action"]
+      ])
+    ]},
+    {name:"Proposal Template", sections:[
+      CL("Required Document Sections", [
+        ["Executive Summary — 2-sentence problem/solution statement","Required"],
+        ["Prospect-Specific Problem Statement — their exact, named pain points","Required"],
+        ["Proposed Solution — map features directly to their use case","Required"],
+        ["Package & Pricing — recommended plan with monthly vs annual options","Required"],
+        ["Implementation Timeline — go-live target within 5 business days","Required"],
+        ["Client References — 2 comparable clubs with measurable outcomes"],
+        ["Terms & Validity — proposal valid 14 days; contact details for queries"]
+      ]),
+      TB("Pricing Guidelines", ["Plan / Scenario","Approved Guideline"], [
+        ["Monthly plan","Standard list price; discounts require VP approval"],
+        ["Annual plan","Up to 15% discount permitted without approval"],
+        ["Multi-venue (3+ venues)","5% per additional venue; Sales Mgr approval required"],
+        ["Trial extension","Max 14 days; CS Manager must approve"],
+        ["Custom package","Requires Product input; allow 5-day lead time"]
+      ])
+    ]},
+    {name:"Follow-up Protocol", sections:[
+      ST("Post-Demo Action Sequence", [
+        ["Send thank-you email within 2 hours","Include demo recording link and personalised proposal PDF"],
+        ["Log demo outcome in CRM","Mark as: Completed, No-show, or Rescheduled"],
+        ["Reschedule no-shows within 24 hours","Maximum 2 reschedule attempts before marking as cold"],
+        ["Follow up within 48 hours","If no response to proposal after sending"],
+        ["Switch to nurture sequence","After 2 unanswered follow-ups, enrol in 2-week email sequence"],
+        ["Mark as Lost after 30 days of no engagement","Move contact to 90-day re-engagement queue"]
+      ])
+    ]}
+  ]
+},
+"customer-acquisition__contract-close": {
+  desc:"End-to-end process for finalising contracts, managing negotiations, and recording deal outcomes.",
+  meta:{version:"v3.1", updated:"Jul 2026", owner:"VP Sales", status:"Active"},
+  tabs:[
+    {name:"Contract Checklist", sections:[
+      CL("Legal Requirements", [
+        ["Master Service Agreement (MSA) from the approved template","Required"],
+        ["Order Form or Statement of Work (SOW) attached","Required"],
+        ["Pricing, billing frequency, and payment terms confirmed with Finance","Required"],
+        ["Data Processing Agreement (DPA) included for GDPR compliance","Required"],
+        ["Liability cap and indemnification clauses reviewed by Legal","Required"],
+        ["SLA uptime commitments and remedy terms defined"],
+        ["Termination clause: minimum 30-day written notice period"],
+        ["Governing law and jurisdiction clause confirmed"]
+      ]),
+      CL("Signature Workflow", [
+        ["Contract prepared in DocuSign from the approved MSA template","Required"],
+        ["Correct approver identified per deal tier (see Approval tab)","Required"],
+        ["Prospect's authorised signatory confirmed by name and title","Required"],
+        ["Sent via DocuSign with 7-day signing deadline set"],
+        ["Countersigned and archived in CRM within 24 hours of receipt"]
+      ])
+    ]},
+    {name:"Negotiation Playbook", sections:[
+      TB("Common Scenarios & Approved Responses", ["Prospect Scenario","Approved Response"], [
+        ["Discount > 15% requested","Requires VP Sales approval; counter with annual plan savings first"],
+        ["Extended payment terms > 30 days","Standard is net-30; net-60 requires Finance sign-off"],
+        ["Custom SLA request","Escalate to Engineering; 2-business-day feasibility SLA"],
+        ["Scope expansion mid-negotiation","Requires a separate SOW; cannot be retroactively added to active deal"],
+        ["IP or data ownership request","Escalate to Legal immediately — no exceptions"],
+        ["Multi-year lock-in resistance","Offer monthly plan at +10% premium to preserve flexibility"],
+        ["Reference / case study hesitation","Anonymous testimonial is always acceptable as an alternative"]
+      ])
+    ]},
+    {name:"Approval Workflow", sections:[
+      ST("Deal Approval Tiers", [
+        ["AE prepares contract in DocuSign","Use the approved MSA template — no custom drafts without Legal"],
+        ["Deals under $5K / yr","AE may countersign directly — no further approval needed"],
+        ["Deals $5K–$20K / yr","Sales Manager must review and approve before sending to prospect"],
+        ["Deals over $20K / yr","VP Sales review + Legal sign-off required (SLA: 2 business days)"],
+        ["Legal returns approval or red-lines","Within 2 business days; AE responds to any red-lines within 24 hours"],
+        ["AE sends to prospect with 7-day deadline","Set automatic reminder at day 5 if unsigned"],
+        ["Notify Finance & Onboarding upon signature","Trigger onboarding workflow immediately — same business day"],
+        ["File signed contract in CRM + Google Drive","Within 24 hours of counter-signature"]
+      ])
+    ]},
+    {name:"Win / Loss Process", sections:[
+      CL("Post-Deal Actions", [
+        ["Update deal status in CRM immediately: Won or Lost","Required"],
+        ["Select win/loss reason code from the CRM dropdown","Required"],
+        ["Record which competitor was displaced (win) or chosen (loss)"],
+        ["Notify Finance & Onboarding for won deals to trigger handoff","Required"],
+        ["Schedule deal review call for any deal over $10K ARR"],
+        ["Log 3 key learnings in the Win/Loss Tracker spreadsheet"],
+        ["Add lost contacts to 90-day re-engagement email sequence"],
+        ["Update pipeline forecast in CRM within same business day","Required"]
+      ])
+    ]}
+  ]
+},
+"customer-acquisition__customer-onboarding": {
+  desc:"End-to-end playbook for activating new customers from contract signature through to established usage.",
+  meta:{version:"v4.0", updated:"Jul 2026", owner:"Onboarding Manager", status:"Active"},
+  tabs:[
+    {name:"Day 1 Checklist", sections:[
+      CL("Account Setup", [
+        ["Create customer account in admin portal","Required"],
+        ["Assign dedicated Customer Success Manager","Required"],
+        ["Configure venue details, camera IDs, and user roster in system","Required"],
+        ["Send personalised welcome email with login credentials","Required"],
+        ["Upload customer logo and branding to account"],
+        ["Set up shared Slack or Teams channel with customer admin"]
+      ]),
+      CL("Kickoff Coordination", [
+        ["Schedule kickoff call within 48 hours of contract signing","Required"],
+        ["Invite CS Manager, technical lead, and customer admin to call","Required"],
+        ["Confirm data processing agreement (DPA) is signed","Required"],
+        ["Share onboarding guide, FAQ, and tutorial video links","Required"],
+        ["Set 30/60/90-day milestone reminders in the CS platform"],
+        ["Brief Account Executive on account status — formal handoff meeting"]
+      ])
+    ]},
+    {name:"30 / 60 / 90 Day Plan", sections:[
+      ML("Success Timeline", [
+        ["Day 0–30: Foundation", [
+          "Platform fully configured and cameras installed at venue",
+          "Admin users trained on all core platform features",
+          "First live recording session successfully completed",
+          "QR codes printed and distributed to all end users",
+          "Initial onboarding feedback survey sent and reviewed"
+        ]],
+        ["Day 31–60: Adoption", [
+          "All staff trained on highlight tagging and post-match review",
+          "20+ recording sessions completed across real matches",
+          "First highlight reel created, shared externally, and celebrated",
+          "Check-in call to surface friction, blockers, and early NPS",
+          "Expansion conversation initiated if high venue utilisation detected"
+        ]],
+        ["Day 61–90: Success", [
+          "Regular usage established — 3 or more sessions per week",
+          "Net Promoter Score survey distributed to all users",
+          "Success story or case study opportunity identified with customer",
+          "Renewal and expansion planning discussion initiated",
+          "Formal handoff from Onboarding team to long-term CS Manager"
+        ]]
+      ])
+    ]},
+    {name:"Training Agenda", sections:[
+      ST("Training Session Schedule", [
+        ["Session 1 – Platform Basics (60 min)","Account setup & user management · QR code generation & distribution · Camera discovery & pairing process"],
+        ["Session 2 – Recording & Tagging (45 min)","Starting and stopping a session · Live highlight tagging during play · Reviewing and editing tags post-match"],
+        ["Session 3 – Video Management (30 min)","Viewing, downloading, and organising videos · Sharing via email and social · Managing video history & retention"],
+        ["Session 4 – Admin & Reporting (30 min)","User permissions and role management · Usage analytics dashboard · Billing portal & subscription management"]
+      ]),
+      TB("Delivery Guidelines", ["Format","Guideline"], [
+        ["Live sessions","Preferred for Sessions 1 & 2; record for reference"],
+        ["Group size","Max 8 participants per session for effective Q&A"],
+        ["Session recordings","Upload to customer's shared drive within 24 hours"],
+        ["Self-paced fallback","Video library available for async onboarding"],
+        ["Certification","Issue completion certificate to admin users after Session 4"]
+      ])
+    ]},
+    {name:"Success Milestones", sections:[
+      TB("Key Customer Milestones", ["Milestone","Timepoint"], [
+        ["First recording session completed","Week 1"],
+        ["5+ recording sessions completed","Week 2"],
+        ["First highlight reel created and shared externally","Week 3"],
+        ["All admin users trained and actively using the platform","Week 4"],
+        ["25+ total recording sessions across the account","Month 2"],
+        ["Regular weekly usage: 3 or more sessions per week","Month 3"],
+        ["Net Promoter Score above 8 collected","Month 3"],
+        ["Renewal or expansion planning discussion initiated","Month 3"],
+        ["Customer case study or public testimonial secured","Month 4+"]
+      ])
+    ]}
+  ]
+},
+
+/* ===================== SERVICE DELIVERY ===================== */
+"service-delivery__qr-authentication": {
+  desc:"Configuration guide and troubleshooting reference for QR-based session access and Google SSO.",
+  meta:{version:"v2.2", updated:"Jul 2026", owner:"Platform Eng. Lead", status:"Active"},
+  tabs:[
+    {name:"Setup & Configuration", sections:[
+      ST("QR Code Generation Steps", [
+        ["Create venue record in admin portal","Assign venue name, sport type, camera count, and timezone"],
+        ["Generate session QR via Venues > QR Management","Each QR is unique per venue; regenerate every 90 days or on security flag"],
+        ["Set QR validity window","Default: 12-hour active window per session; configurable per venue"],
+        ["Print and laminate QR codes for physical placement","Minimum print size: 10cm × 10cm; avoid reflective surfaces"],
+        ["Test scan from both iOS and Android before venue go-live","Confirm redirect lands on Google login screen within 2 seconds"]
+      ]),
+      CL("Google SSO Configuration Checklist", [
+        ["Google OAuth 2.0 client ID registered in GCP Console for production environment","Required"],
+        ["Authorised redirect URIs include all production and staging domains","Required"],
+        ["SSO scope limited to email and profile — no Calendar or Drive access","Required"],
+        ["Token expiry set to 1 hour; refresh token rotation enabled"],
+        ["Anonymous fallback mode enabled for venues with poor connectivity"],
+        ["New SSO changes tested in staging before promotion to production","Required"]
+      ])
+    ]},
+    {name:"Troubleshooting", sections:[
+      TB("Common Authentication Errors", ["Error / Symptom","Resolution"], [
+        ["QR scan → blank screen","Check QR validity window; regenerate if expired"],
+        ["Google login loop","Clear browser cache; check redirect URI mismatch in GCP Console"],
+        ["Token invalid error","Force re-auth; check server clock drift — must be within 5 seconds of NTP"],
+        ["User sees \"access denied\"","Confirm email domain is on the venue allowlist; add if needed"],
+        ["SSO not loading on mobile","Disable popup blocker; test with in-app browser fallback"],
+        ["Anonymous mode fails","Check venue anonymous_access flag in admin portal; enable if required"]
+      ])
+    ]}
+  ]
+},
+"service-delivery__camera-management": {
+  desc:"End-to-end guide for camera discovery, pairing, health monitoring, and firmware maintenance.",
+  meta:{version:"v3.3", updated:"Jul 2026", owner:"DevOps Manager", status:"Active"},
+  tabs:[
+    {name:"Setup & Pairing", sections:[
+      ST("Camera Discovery & Pairing Steps", [
+        ["Power on camera and connect to venue WiFi network","Cameras must be on the dedicated IoT VLAN, not the guest network"],
+        ["Open admin portal → Venue → Cameras → Discover","Discovery broadcasts on UDP port 9999; takes up to 60 seconds on first scan"],
+        ["Assign discovered camera to venue and position (Main / Secondary)","Position metadata is used by the highlight compiler for dual-camera sync"],
+        ["Run 30-second test recording and verify feed in admin portal","Check: resolution ≥ 1080p, frame rate = 30 fps, no frame drops in first 10 seconds"],
+        ["Apply camera naming convention: [VenueCode]-[Position]-[SeqNo]","e.g., MCH-MAIN-01 — names must be unique across the account"]
+      ]),
+      CL("Pre-Session Health Checklist", [
+        ["Camera online status shows green in admin portal","Required"],
+        ["Battery or power source confirmed: > 80% charge or continuous power","Required"],
+        ["Storage availability confirmed: > 20 GB free on-device","Required"],
+        ["WiFi signal strength > -65 dBm at camera position","Required"],
+        ["Lens cleaned and free of obstructions"],
+        ["Field of view confirmed for the venue layout"]
+      ])
+    ]},
+    {name:"Health & Firmware", sections:[
+      ST("Firmware Update Process", [
+        ["Check firmware version in Admin → Cameras → Firmware Audit","Any camera > 2 minor versions behind must be updated within 7 days"],
+        ["Schedule update during off-peak hours (22:00–06:00 local time)","Update window required; firmware push during active session will fail"],
+        ["Push update via OTA from admin portal","Camera reboots automatically; process takes 3–8 minutes per device"],
+        ["Verify successful update: firmware version and post-update test recording","If update fails twice, flag for manual on-site intervention by Field Tech"]
+      ]),
+      CL("Ongoing Monitoring Checklist", [
+        ["Weekly automated health report reviewed by DevOps team","Required"],
+        ["Any camera offline > 24 hours triggers an alert ticket in support system","Required"],
+        ["Camera logs reviewed monthly for recurring errors or connectivity drops"],
+        ["Cameras not used in 30+ days flagged for decommission review"],
+        ["Battery replacement scheduled annually for cordless cameras"]
+      ])
+    ]}
+  ]
+},
+"service-delivery__recording-sessions": {
+  desc:"Operational guide for session lifecycle management, error recovery, and concurrency controls.",
+  meta:{version:"v2.7", updated:"Jul 2026", owner:"Platform Eng. Lead", status:"Active"},
+  tabs:[
+    {name:"Session Workflow", sections:[
+      ST("Recording Session Lifecycle", [
+        ["User authenticates via QR scan and Google SSO","Session token issued; venue and camera context loaded"],
+        ["Camera selection screen presented","Single camera default; dual camera if two cameras paired to venue"],
+        ["User taps \"Start Recording\"","Session record created with status = RECORDING; timestamp logged in UTC"],
+        ["Real-time tag insertion available during session","Tags written to session event log with millisecond precision"],
+        ["User taps \"Stop Recording\"","Session status transitions to PROCESSING; footage locked for upload"],
+        ["Video uploaded to processing queue","Target: upload initiated within 30 seconds of session end"]
+      ]),
+      CL("Session Start Checklist", [
+        ["Camera online and health check passed before recording starts","Required"],
+        ["Active session limit not exceeded (max 3 concurrent per account on standard plan)","Required"],
+        ["Venue storage quota not exceeded (alert at 80%; block at 95%)","Required"],
+        ["GPS metadata tagged if venue location services are enabled"],
+        ["Session metadata (sport, team name, match type) confirmed by user"]
+      ])
+    ]},
+    {name:"Error Recovery", sections:[
+      ST("Interruption Recovery Steps", [
+        ["Detect interruption: app crash, network loss, or camera disconnect","Session status transitions to INTERRUPTED; last-known timestamp preserved"],
+        ["On app reopen, check for INTERRUPTED sessions","User prompted to resume or discard within 15 minutes of interruption"],
+        ["Resume selected: re-establish camera connection","Footage buffer from on-device storage appended to active session"],
+        ["Discard selected: session marked as ABANDONED","Partial footage retained for 24 hours; user may request recovery within this window"],
+        ["Auto-recovery triggered if network restored within 3 minutes","No user action required; session resumes seamlessly"]
+      ]),
+      TB("Recovery Scenario Reference", ["Scenario","System Behaviour"], [
+        ["Network drops mid-session","On-device buffer stores up to 5 minutes of footage; auto-uploads when restored"],
+        ["App force-closes","Session preserved in INTERRUPTED state; recovery prompt on next app launch"],
+        ["Camera disconnects","Session paused; alert shown to user; resumes on camera reconnect"],
+        ["Device battery dies","Session closed as INTERRUPTED; footage recovered from on-device storage within 24 hrs"],
+        ["Concurrent limit reached","New session blocked; user directed to end an active session first"]
+      ])
+    ]}
+  ]
+},
+"service-delivery__highlight-tagging": {
+  desc:"Configuration guide and workflow for real-time highlight tagging and post-match tag management.",
+  meta:{version:"v1.5", updated:"Jul 2026", owner:"Product Manager", status:"Active"},
+  tabs:[
+    {name:"Tag Configuration", sections:[
+      CL("Tag Category Setup", [
+        ["Default tag set configured per sport type in Admin → Tags","Required"],
+        ["Custom tags added for customer-specific events (e.g., penalty corner, power play)","Required"],
+        ["Tag colours assigned — each tag must have a unique colour for reel visibility"],
+        ["Maximum 20 active tags per account to avoid UI clutter"],
+        ["Tag icon mapping reviewed — icons must be distinguishable at 24×24 px"],
+        ["Tag list exported and shared with customer admin for approval","Required"]
+      ]),
+      TB("Standard Tag Reference", ["Standard Tag","Sport / Usage"], [
+        ["Goal / Score","All sports; marks scoring moments for highlight reel inclusion"],
+        ["Shot / Attempt","Ball sports; marks key offensive attempts"],
+        ["Save / Block","Sports with goalkeeping; marks defensive highlights"],
+        ["Foul / Penalty","All sports; marks disciplinary events"],
+        ["Assist / Key Pass","Team sports; marks build-up play leading to a goal"],
+        ["Start / End","Session markers; auto-inserted by system"]
+      ])
+    ]},
+    {name:"Tagging Workflow", sections:[
+      ST("Live Tagging Process", [
+        ["Open active session screen once recording starts","Tag panel automatically expands with pre-configured tag buttons"],
+        ["Tap a tag button at the moment of the event","Tag timestamp recorded in milliseconds; confirmed with haptic feedback"],
+        ["Add optional note within 5 seconds of tagging","Notes capped at 80 characters; stored alongside timestamp in session log"],
+        ["Review tag list during natural play breaks","Tap any tag to jump to preview at +/- 5 seconds"],
+        ["Post-match: edit, delete, or adjust tag timestamps","Editing window: 48 hours after session end; tags locked after video is shared"]
+      ])
+    ]}
+  ]
+},
+"service-delivery__video-processing": {
+  desc:"Technical guide for the video encoding pipeline, quality validation, and error handling procedures.",
+  meta:{version:"v2.9", updated:"Jul 2026", owner:"Platform Eng. Lead", status:"Active"},
+  tabs:[
+    {name:"Processing Pipeline", sections:[
+      ST("End-to-End Processing Workflow", [
+        ["Session end triggers upload to processing queue","Priority: P1 = multi-camera, P2 = single camera; SLA target 5 minutes end-to-end"],
+        ["Raw footage validated: file integrity, codec support, minimum duration > 60 sec","Invalid files rejected immediately; customer and DevOps notified"],
+        ["Encoding job initiated: H.264 baseline for mobile, H.265 for full quality","Bitrate targets: 4 Mbps (720p), 8 Mbps (1080p)"],
+        ["Highlight compilation from tagged moments","Each highlight clip: 5 sec pre-tag + 15 sec post-tag; merged with fade transitions"],
+        ["Automated QA: resolution, frame rate, audio sync, watermark placement","Must pass 6/6 QA checks; failures trigger re-encode up to 2 retries"],
+        ["CDN upload and signed URL generation","URLs expire in 7 days by default; configurable per customer plan"]
+      ]),
+      TB("Quality Standards", ["Quality Parameter","Minimum Standard"], [
+        ["Output resolution","720p minimum; 1080p for cameras supporting it"],
+        ["Frame rate","30 fps minimum; 60 fps preserved if input supports it"],
+        ["Audio sync","drift < 100ms audio/video offset permitted"],
+        ["Encoding time","< 3× real-time duration (60-min match < 3 hrs processing)"],
+        ["CDN delivery latency","Video available for playback within 5 min of processing completion"]
+      ])
+    ]},
+    {name:"Error Handling", sections:[
+      CL("Processing Failure Checklist", [
+        ["Encoding failure → auto-retry up to 2 times with full logging","Automatic"],
+        ["After 2 retries: alert sent to Platform Eng. on-call Slack channel","Required"],
+        ["Customer notified of delay within 30 minutes of second retry failure"],
+        ["Manual re-queue available via Admin → Processing → Force Retry"],
+        ["If raw file is corrupt: customer support creates manual re-upload ticket"],
+        ["All processing errors logged to DataDog with session ID, error code, and stack trace","Required"],
+        ["Monthly error rate review: target < 1% of total sessions"]
+      ])
+    ]}
+  ]
+},
+"service-delivery__delivery-notifications": {
+  desc:"Configuration guide for email delivery, push notifications, and video sharing settings.",
+  meta:{version:"v2.0", updated:"Jul 2026", owner:"Platform Eng. Lead", status:"Active"},
+  tabs:[
+    {name:"Email Delivery", sections:[
+      CL("Email Configuration Checklist", [
+        ["Transactional email domain verified in SendGrid with DKIM and SPF records","Required"],
+        ["Video delivery email template reviewed and approved by Marketing","Required"],
+        ["Email includes: customer name, session date, venue, signed video URL, expiry date","Required"],
+        ["Expiry date clearly stated in email body (default: 7 days from delivery)"],
+        ["Mobile-responsive template tested on iOS Mail, Gmail, and Outlook"],
+        ["Unsubscribe footer included in all marketing-adjacent notifications"],
+        ["Delivery confirmed via SendGrid webhook within 60 seconds of send","Required"]
+      ]),
+      TB("Delivery Trigger Reference", ["Event Trigger","Action"], [
+        ["Video processing complete","Immediate delivery email sent to all session participants"],
+        ["Processing delay > 10 min","Delay notification sent to customer; ETA provided"],
+        ["Video link about to expire","Reminder email sent 24 hours before expiry"],
+        ["Video link expired","Expiry notification with self-serve renewal link"],
+        ["Re-processing complete","New delivery email with updated video link"]
+      ])
+    ]},
+    {name:"Push & SMS", sections:[
+      ST("Push Notification Setup", [
+        ["Ensure push permission requested on first app launch","Shown after onboarding step 2; opt-in rate target > 60%"],
+        ["Configure FCM for Android and APNs for iOS","Certificates renewed 30 days before expiry; rotation logged in DevOps calendar"],
+        ["Map notification types to user preference settings","Types: Video Ready, Processing Delay, Account Alert — all default to ON"],
+        ["Test push delivery end-to-end on physical device before production release","Use TestFlight (iOS) and internal app build (Android); confirm within 5 seconds"],
+        ["SMS fallback enabled for customers who have disabled push","Requires customer opt-in at account level; uses Twilio integration"]
+      ])
+    ]}
+  ]
+},
+
+/* ===================== REVENUE & BILLING ===================== */
+"revenue-billing__pipeline-forecasting": {
+  desc:"CRM pipeline management standards and revenue forecasting process for accurate business planning.",
+  meta:{version:"v2.3", updated:"Jul 2026", owner:"Revenue Ops Manager", status:"Active"},
+  tabs:[
+    {name:"CRM Pipeline", sections:[
+      TB("Deal Stage Definitions", ["Stage","Exit Criteria"], [
+        ["Prospect","Contact identified; ICP match confirmed"],
+        ["Qualified","Discovery call completed; BANT score ≥ 70"],
+        ["Demo Scheduled","Demo meeting booked and confirmed by prospect"],
+        ["Demo Delivered","Demo completed; no reschedule in 7 days"],
+        ["Proposal Sent","Proposal delivered; verbal interest indicated"],
+        ["Negotiation","Legal or pricing discussed; champion confirmed"],
+        ["Closed Won","Contract signed and payment method confirmed"],
+        ["Closed Lost","Prospect declined or stopped responding (> 30 days)"]
+      ]),
+      CL("Pipeline Hygiene Checklist", [
+        ["Every deal has a next action and a due date","Required"],
+        ["Deals without activity in 14+ days reviewed in weekly pipeline call","Required"],
+        ["Close date updated whenever the prospect signals a delay","Required"],
+        ["Deal amount reflects the annual contract value (ACV), not total deal value"],
+        ["Contact roles (Champion, Economic Buyer, Blocker) tagged on each deal"],
+        ["Win/Loss reason code added within 24 hours of deal close"]
+      ])
+    ]},
+    {name:"Forecast Process", sections:[
+      ST("Monthly Forecast Workflow", [
+        ["AEs submit deal-level forecast by the 1st of each month","Categorise each deal: Commit, Best Case, or Pipeline"],
+        ["Revenue Ops validates deals against CRM stage and activity data","Flag any \"Commit\" deals with no activity in past 14 days for rep review"],
+        ["Bottom-up forecast assembled by segment (SMB, Mid-Market)","Apply historical conversion rates to Best Case and Pipeline categories"],
+        ["Top-down check against annual plan and trailing 3-month actuals","Variance > 15% must be explained by pipeline mix or market conditions"],
+        ["Final forecast submitted to CFO by the 5th business day","Includes MRR added, churn risk, and NRR trajectory"]
+      ])
+    ]}
+  ]
+},
+"revenue-billing__subscription-management": {
+  desc:"Lifecycle management for subscription plans, trial conversions, upgrades, downgrades, and cancellations.",
+  meta:{version:"v2.6", updated:"Jul 2026", owner:"Subscription Lead", status:"Active"},
+  tabs:[
+    {name:"Plan Lifecycle", sections:[
+      ST("Trial-to-Paid Conversion Workflow", [
+        ["Trial account created — 14-day default","Confirmation email sent; CS Manager auto-assigned to account"],
+        ["Day 3: check-in email from CS Manager","Confirm setup complete and first recording done; offer training if needed"],
+        ["Day 7: usage review in admin dashboard","If < 2 sessions recorded, trigger proactive outreach call"],
+        ["Day 10: conversion nudge email","Personalised plan recommendation based on usage and venue count"],
+        ["Day 13: expiry warning email","Urgency messaging; link directly to billing portal"],
+        ["Day 14: trial expires — account paused","Data retained for 30 days; customer can self-serve convert"],
+        ["Day 16: save attempt call from Sales","Offer 30-day extended trial or first month at 20% discount"]
+      ]),
+      TB("Plan Change Rules", ["Change Type","Rule"], [
+        ["Upgrade (same billing cycle)","Prorated immediately; new rate applies from upgrade date"],
+        ["Downgrade","Effective from next billing cycle; no immediate proration"],
+        ["Adding venues","Prorated to next renewal date; Finance notified same day"],
+        ["Removing venues","Effective from next cycle; must confirm with CS Manager first"],
+        ["Annual ↔ Monthly switch","Annual-to-monthly: effective next renewal; monthly-to-annual: immediate discount applied"]
+      ])
+    ]},
+    {name:"Cancellation & Win-Back", sections:[
+      ST("Cancellation Process", [
+        ["Cancellation request received via billing portal or support ticket","Acknowledged within 2 business hours; assigned to Subscription Lead"],
+        ["Retention call scheduled within 24 hours","CS Manager + Subscription Lead; understand root cause of cancellation"],
+        ["Counter-offer if root cause is addressable","Options: plan downgrade, account pause (30–90 days), discount (up to 20% with VP approval)"],
+        ["If cancellation proceeds: data export offered to customer","All recorded videos available for 30 days post-cancellation"],
+        ["Cancellation reason code logged in CRM","Codes: Price, Feature Gap, Low Usage, Competition, Business Closure"]
+      ]),
+      CL("Win-Back Checklist", [
+        ["Cancelled accounts added to 90-day re-engagement sequence","Automatic"],
+        ["Win-back email at 30 days: highlight improvements since cancellation"],
+        ["Win-back email at 60 days: personalised offer based on cancellation reason"],
+        ["Win-back call at 90 days from Subscription Lead","Required"],
+        ["Product updates communicated if cancellation reason was a feature gap"],
+        ["Win-back deals tracked separately in CRM with original ARR as benchmark"]
+      ])
+    ]}
+  ]
+},
+"revenue-billing__invoicing-billing": {
+  desc:"Automated invoice generation, billing cycle management, and credit memo processing procedures.",
+  meta:{version:"v3.2", updated:"Jul 2026", owner:"Revenue Ops Manager", status:"Active"},
+  tabs:[
+    {name:"Invoice Generation", sections:[
+      CL("Auto-Invoice Configuration Checklist", [
+        ["Billing trigger configured in Stripe: subscription renewal or manual event","Required"],
+        ["Invoice template includes: company name, ABN/VAT, line items, period, due date","Required"],
+        ["PDF generation enabled; invoice auto-emailed to billing contact","Required"],
+        ["Payment terms set to Net-30 by default; Net-60 requires Finance approval"],
+        ["Tax calculation rule applied per customer jurisdiction (GST, VAT, sales tax)"],
+        ["Invoice numbering follows sequential format: INV-YYYY-XXXX"],
+        ["New invoice template changes reviewed by Legal and Finance before activation","Required"]
+      ]),
+      TB("Invoice Line Item Reference", ["Line Item","Description"], [
+        ["Base subscription","Monthly or annual plan fee; described as \"Platform Access – [Plan Name]\""],
+        ["Additional venues","Per-venue fee above plan limit; prorated for partial months"],
+        ["Add-on services","Listed individually: Analytics, Priority Support, Branding Pack"],
+        ["Event billing","Per-event charge for tournaments; listed with event date and name"],
+        ["Taxes","Displayed as separate line items per applicable jurisdiction"]
+      ])
+    ]},
+    {name:"Adjustments & Credits", sections:[
+      ST("Credit Memo Process", [
+        ["Credit request submitted by CS Manager or customer via support ticket","Must include: original invoice number, credit reason, and amount requested"],
+        ["Finance reviews and approves credits under $500","Credits over $500 require VP Sales or CFO approval"],
+        ["Credit memo created in Stripe linked to original invoice","Memo number format: CM-YYYY-XXXX; sent to customer billing contact"],
+        ["Credit applied to next invoice automatically","Or refunded to original payment method if customer is churning; allow 5–10 business days"],
+        ["Credit recorded in revenue recognition system","Reduces deferred revenue or recognised revenue in the applicable period"]
+      ])
+    ]}
+  ]
+},
+"revenue-billing__payment-collection": {
+  desc:"Gateway configuration, failed payment retry logic, dunning management, and dispute handling procedures.",
+  meta:{version:"v2.8", updated:"Jul 2026", owner:"Revenue Ops Manager", status:"Active"},
+  tabs:[
+    {name:"Gateway & Retry", sections:[
+      CL("Stripe Gateway Configuration Checklist", [
+        ["Stripe webhooks configured: payment_intent.succeeded, invoice.payment_failed, customer.subscription.deleted","Required"],
+        ["Automatic payment retries enabled: Day 1, Day 3, Day 5, Day 7 after failure","Required"],
+        ["Smart Retries enabled in Stripe Dashboard (ML-optimised retry timing)","Required"],
+        ["3D Secure (SCA) enabled for all EU/UK customers","Required"],
+        ["Currency settings confirmed: default USD; AUD and GBP also supported"],
+        ["Card update email trigger configured for cards expiring within 30 days"],
+        ["Revenue Ops notified of failed payments over $1,000 via Slack alert","Required"]
+      ]),
+      ST("Dunning Sequence Steps", [
+        ["Day 0: Initial payment failure — automatic retry in 24 hours","Customer receives payment failure notification email"],
+        ["Day 3: Second retry + update card email","Billing portal link included; customer can update card directly"],
+        ["Day 5: Third retry + escalation to CS Manager","CS Manager makes contact attempt by phone if customer is > $500 ARR"],
+        ["Day 7: Final retry + account suspension warning","Customer notified account will be suspended in 3 days if unpaid"],
+        ["Day 10: Account suspended (read-only mode)","Existing videos remain accessible; new recording blocked"],
+        ["Day 30: Account scheduled for closure","Final notice; Finance to decide on collections referral vs write-off"]
+      ])
+    ]},
+    {name:"Disputes & Reconciliation", sections:[
+      ST("Chargeback Dispute Steps", [
+        ["Chargeback notification received via Stripe","Finance and CS Manager notified immediately; 7-day Stripe response window"],
+        ["Gather evidence: contract, signed proposal, usage logs, emails","Revenue Ops collects evidence package within 3 business days"],
+        ["Submit Stripe dispute response with evidence","Follow Stripe dispute response template; include session logs as proof of service"],
+        ["Monitor outcome in Stripe dashboard","Stripe resolves within 75 days; log all chargeback outcomes in Finance tracker"]
+      ]),
+      CL("Monthly Reconciliation Checklist", [
+        ["Stripe payouts reconciled against bank statement by 5th of each month","Required"],
+        ["All failed invoices reviewed — confirm retry success or mark as bad debt"],
+        ["Stripe balance zero: all collected revenue transferred to operating account"],
+        ["MRR from payments cross-checked against CRM subscription data"],
+        ["Any discrepancy > $50 investigated and resolved before month-end close","Required"]
+      ])
+    ]}
+  ]
+},
+"revenue-billing__revenue-recognition": {
+  desc:"ASC 606 / IFRS 15 compliance framework, deferred revenue tracking, and audit documentation standards.",
+  meta:{version:"v4.1", updated:"Jul 2026", owner:"Revenue Recognition Analyst", status:"Active"},
+  tabs:[
+    {name:"ASC 606 Compliance", sections:[
+      ST("Five-Step Recognition Model", [
+        ["Step 1: Identify the contract with the customer","Signed MSA + Order Form; confirm both parties have approved commercial terms"],
+        ["Step 2: Identify the performance obligations","Platform access (subscription), Camera setup (one-time), Training (if sold separately)"],
+        ["Step 3: Determine the transaction price","Total contract value net of variable consideration (discounts, usage credits)"],
+        ["Step 4: Allocate price to each performance obligation","Use standalone selling prices (SSPs); document SSP rationale in the revenue workbook"],
+        ["Step 5: Recognise revenue as each obligation is satisfied","Platform access: ratable over term; Setup: on completion; Training: on delivery"]
+      ]),
+      CL("Compliance Checklist", [
+        ["All contracts reviewed by Rev Rec Analyst before revenue is recorded","Required"],
+        ["Variable consideration estimated conservatively per ASC 606-10-32-11","Required"],
+        ["Contract modifications documented: new contract vs. modification to existing","Required"],
+        ["Revenue schedule updated in the finance system within 2 business days of contract sign"],
+        ["Quarterly review of SSP assumptions by Finance Manager"],
+        ["External audit workpapers prepared by month 1 of each quarter for prior quarter","Required"]
+      ])
+    ]},
+    {name:"Deferred Revenue", sections:[
+      ML("Deferred Revenue Recognition Timeline", [
+        ["Contract Signing", [
+          "Full annual contract value recorded as deferred revenue liability",
+          "Revenue schedule created: monthly ratable recognition for subscription",
+          "One-time items (setup, training) scheduled for recognition on completion"
+        ]],
+        ["Monthly Recognition", [
+          "1/12 of annual subscription value moved from deferred to recognised each month",
+          "Journal entry: Dr Deferred Revenue / Cr Revenue — prepared by Rev Rec Analyst",
+          "Waterfall report updated and reviewed by Finance Manager"
+        ]],
+        ["Contract End or Churn", [
+          "Remaining deferred revenue balance reviewed — any unearned balance reversed",
+          "Refund liability assessed if customer overpaid",
+          "Final recognition entries documented for audit trail"
+        ]]
+      ])
+    ]}
+  ]
+},
+"revenue-billing__financial-reporting": {
+  desc:"MRR/ARR metrics, cohort analysis, and board reporting package standards for investor-grade reporting.",
+  meta:{version:"v2.5", updated:"Jul 2026", owner:"Finance Manager", status:"Active"},
+  tabs:[
+    {name:"Key Metrics", sections:[
+      TB("Core SaaS Metric Definitions", ["Metric","Definition & Calculation"], [
+        ["MRR","Sum of all active subscription monthly fees; excludes one-time and usage charges"],
+        ["ARR","MRR × 12; annualised run-rate; used for board and investor reporting"],
+        ["NRR","(Beginning MRR + Expansion − Contraction − Churn) / Beginning MRR × 100"],
+        ["Gross Churn","MRR lost from cancellations and downgrades / Beginning-of-period MRR"],
+        ["Customer LTV","ACV / Gross Churn Rate; represents total expected revenue per customer"],
+        ["CAC Payback","CAC / (ACV × Gross Margin); target < 18 months"]
+      ]),
+      CL("Monthly Metrics Checklist", [
+        ["MRR waterfall completed: New + Expansion − Contraction − Churn = Net New MRR","Required"],
+        ["NRR calculated and compared against prior month and same month last year","Required"],
+        ["Cohort retention table updated with newest customer cohort","Required"],
+        ["Customer count by plan tier reconciled against CRM"],
+        ["Gross margin calculated: Revenue − COGS (hosting, support labour, camera costs)"],
+        ["Dashboard published in Notion/Looker by 10th of each month","Required"]
+      ])
+    ]},
+    {name:"Board Reporting", sections:[
+      ST("Quarterly Board Pack Workflow", [
+        ["Finance Manager drafts board pack template by day 5 of quarter","Sections: Executive Summary, Revenue Performance, Cohort Analysis, Forecast, Risks"],
+        ["Revenue actuals vs. budget variance section completed by day 8","Flag any variance > 10%; include narrative explanation for each significant line"],
+        ["CEO and CFO review by day 10; feedback incorporated by day 12","Track review comments in Google Docs; close all before final submission"],
+        ["Final pack sent to board by day 14 of the quarter","PDF via Docsend; track open rates to confirm all board members received"]
+      ]),
+      CL("Board Report Checklist", [
+        ["MRR bridge chart (waterfall: New, Expansion, Contraction, Churn)","Required"],
+        ["Trailing 12-month ARR growth chart","Required"],
+        ["NRR and gross churn trend — at least 4 quarters of history","Required"],
+        ["Top 10 customer ARR concentration analysis"],
+        ["Cash runway and burn rate if pre-profitability","Required"],
+        ["Forward pipeline coverage ratio (pipeline / quota)"]
+      ])
+    ]}
+  ]
+},
+
+/* ===================== CUSTOMER SUPPORT ===================== */
+"customer-support__account-access": {
+  desc:"Resolution guide for login failures, password recovery, permission management, and account configuration.",
+  meta:{version:"v2.0", updated:"Jul 2026", owner:"Support Manager", status:"Active"},
+  tabs:[
+    {name:"Issue Resolution", sections:[
+      ST("Login Troubleshooting Steps", [
+        ["Confirm which login method the customer uses (Google SSO or email/password)","Check CRM account record → Auth Method field"],
+        ["For Google SSO issues: ask customer to clear browser cache and try incognito","If still failing: check if their Google account domain is on the allowlist"],
+        ["For email/password: trigger password reset from admin portal","Admin → Users → [Customer] → Reset Password; link expires in 24 hours"],
+        ["Check if account is suspended due to unpaid invoice","Admin → Accounts → [Account] → Status; check Finance for outstanding balance"],
+        ["If none of the above resolves: escalate to Tier 2 for auth log investigation","Include customer email, timestamp, and browser/device info in escalation ticket"]
+      ]),
+      TB("Common Issue Reference", ["Issue","Resolution"], [
+        ["Google SSO error \"access_denied\"","Email domain not on allowlist; add in Admin → SSO → Domains"],
+        ["Password reset email not received","Check spam; confirm email address; re-send from admin portal"],
+        ["Locked out after 5 failed attempts","Unlock via Admin → Users → Unlock; advise customer on correct password"],
+        ["Multi-user invite not working","Confirm seat count not exceeded on current plan; upgrade if needed"],
+        ["Profile changes not saving","Browser cache issue; ask to hard refresh (Ctrl+Shift+R)"]
+      ])
+    ]},
+    {name:"Access Management", sections:[
+      CL("Permissions & Roles Setup Checklist", [
+        ["Account Admin role assigned to at least one customer contact","Required"],
+        ["User roles reviewed: Admin, Manager, Recorder, Viewer"],
+        ["Venue-level access scoping configured for large multi-venue accounts"],
+        ["Inactive users (no login in 90 days) flagged for account admin review"],
+        ["SSO group mapping configured for accounts using Google Workspace","Required"],
+        ["2FA enabled for Admin-role users on enterprise plans","Required"]
+      ])
+    ]}
+  ]
+},
+"customer-support__technical-issues": {
+  desc:"Tier 1 diagnostic checklist, escalation criteria, and Tier 2/3 handoff playbook for technical support.",
+  meta:{version:"v3.4", updated:"Jul 2026", owner:"Support Manager", status:"Active"},
+  tabs:[
+    {name:"Diagnostics", sections:[
+      CL("Tier 1 First-Response Checklist", [
+        ["Confirm customer account status is Active (not suspended or trialling)","Required"],
+        ["Ask for device type, OS version, and app version affected","Required"],
+        ["Check platform status page for any active incidents before diagnosing","Required"],
+        ["Request screenshot or screen recording of the issue"],
+        ["Ask: \"Has this worked before?\" and \"When did it first happen?\""],
+        ["Attempt to reproduce the issue in a test account if possible"]
+      ]),
+      ST("Diagnostic Decision Steps", [
+        ["Identify the affected component","Camera? Recording? QR Scan? App? Video delivery? Narrow down to one system"],
+        ["Check system logs in admin portal for error codes","Admin → Logs → filter by customer ID and date range"],
+        ["Review known issues in the internal Jira bug tracker","Search by component and symptom; link to existing ticket if matched"],
+        ["Attempt standard resolution for the identified component","Follow the component-specific resolution document (camera, recording, auth, etc.)"],
+        ["If unresolved in 20 minutes: prepare escalation package and move to Tier 2","Include: error logs, steps taken, customer details, device info"]
+      ])
+    ]},
+    {name:"Escalation Playbook", sections:[
+      TB("Escalation Criteria by Scenario", ["Scenario","Escalation Path"], [
+        ["App crash reproducible in 3+ steps","Tier 2 → Engineering bug ticket in Jira; P2 priority"],
+        ["Camera not discoverable after reset","Tier 2 Tech Specialist → on-site Field Tech if remote fails"],
+        ["Data loss or missing recordings","Immediate Tier 3 escalation; notify CS Director within 1 hour"],
+        ["Security concern (breach, unauthorised access)","Immediate Tier 3 + Security team; CS Director + CTO notified"],
+        ["Platform-wide outage","Incident bridge opened; VP Operations leads response"]
+      ]),
+      CL("Tier 2 Handoff Checklist", [
+        ["Ticket includes: customer name, account ID, affected session or venue","Required"],
+        ["All steps already taken and outcomes documented in ticket notes","Required"],
+        ["Error logs or screenshots attached to ticket","Required"],
+        ["Customer informed of escalation and expected response time"],
+        ["Tier 1 agent remains assigned on ticket to relay updates to customer"]
+      ])
+    ]}
+  ]
+},
+"customer-support__video-delivery": {
+  desc:"Support guide for diagnosing and resolving video delivery failures, quality issues, and expired links.",
+  meta:{version:"v2.1", updated:"Jul 2026", owner:"Support Manager", status:"Active"},
+  tabs:[
+    {name:"Delivery Verification", sections:[
+      ST("Delivery Troubleshooting Steps", [
+        ["Confirm session completed and status shows DELIVERED in admin portal","Admin → Sessions → [Session ID] → Status; PROCESSING = normal delay"],
+        ["Verify delivery email address on record matches customer inbox","Admin → Accounts → [Account] → Delivery Email; update if incorrect"],
+        ["Check SendGrid delivery log for email status","Possible statuses: Delivered, Bounced, Spam, Pending — action required for non-Delivered"],
+        ["If bounced: update email address and re-trigger delivery from admin portal","Admin → Sessions → [ID] → Resend Delivery Email"],
+        ["If video link is expired: generate a new signed URL from admin portal","Links can be extended for up to 30 days from original session date"]
+      ]),
+      TB("Common Delivery Errors", ["Issue","Resolution"], [
+        ["Email not received","Check spam folder; verify delivery email in admin; resend from portal"],
+        ["Video link expired","Regenerate signed URL in Admin → Sessions → Resend; extend expiry to 30 days"],
+        ["Video not playing (buffering)","Check CDN health on status page; try alternative browser; share direct CDN link"],
+        ["Wrong video delivered","Compare session timestamps; re-process correct session; notify customer"],
+        ["Highlight reel missing","Confirm tags existed on session; re-run highlight compilation via admin portal"]
+      ])
+    ]},
+    {name:"Quality Recovery", sections:[
+      CL("Poor Quality Re-Processing Checklist", [
+        ["Confirm the quality issue: resolution, audio sync, encoding artefacts, or colour","Required"],
+        ["Check original camera footage quality via raw file review in admin","Required"],
+        ["If raw footage is OK: re-process from source via Admin → Sessions → Re-Process"],
+        ["If raw footage is degraded: advise customer and log camera quality issue for DevOps"],
+        ["Re-processed video confirmed with QA check before re-sending to customer","Required"],
+        ["Customer notified with explanation and ETA for corrected video"],
+        ["Service credit issued if delay exceeds 24 hours from original expected delivery"]
+      ])
+    ]}
+  ]
+},
+"customer-support__billing-payments": {
+  desc:"Support resolution guide for payment failures, billing disputes, refunds, and subscription billing questions.",
+  meta:{version:"v2.3", updated:"Jul 2026", owner:"Support Manager", status:"Active"},
+  tabs:[
+    {name:"Payment Issues", sections:[
+      ST("Failed Payment Resolution Workflow", [
+        ["Identify the failure type from Stripe Dashboard","Common codes: insufficient_funds, card_declined, expired_card, do_not_honor"],
+        ["Send customer the billing portal link for card update","Portal URL: billing.platform.com/update; link is account-specific and secure"],
+        ["If customer needs a new payment method: walk through card update live","Screen share if needed; confirm new card is set as default"],
+        ["Once card updated: manually retry payment in Stripe","Stripe → Customer → [Account] → Retry Payment"],
+        ["Confirm successful payment and restore account if it was suspended","Admin → Accounts → [Account] → Set Status to Active"]
+      ]),
+      TB("Common Payment Error Codes", ["Error Code","Customer Explanation & Action"], [
+        ["insufficient_funds","Card declined due to balance; ask customer to use alternative payment method"],
+        ["expired_card","Card expired; customer must update to a valid card in billing portal"],
+        ["do_not_honor","Bank declined — reason unknown to us; customer should contact their bank"],
+        ["card_velocity_exceed","Too many recent attempts; wait 24 hours or use a different card"],
+        ["invalid_cvn","CVV mismatch; customer to re-enter card details carefully"]
+      ])
+    ]},
+    {name:"Refunds & Disputes", sections:[
+      ST("Refund Request Process", [
+        ["Confirm refund eligibility based on refund policy","Monthly plans: prorated refund within 7 days; annual plans: 30-day full refund window"],
+        ["Collect refund reason and original invoice/charge reference","Document in support ticket; required for Finance approval"],
+        ["Tier 1 can approve refunds under $100 without further review","Refunds > $100 require Finance Manager approval; > $500 requires CFO approval"],
+        ["Process refund in Stripe: Customer → Payments → Refund","Select partial or full refund; add internal note with reason code"],
+        ["Notify customer by email with refund confirmation and processing time","Stripe refunds reach customer bank in 5–10 business days"]
+      ]),
+      TB("Refund Policy Reference", ["Scenario","Refund Policy"], [
+        ["Monthly plan — within 7 days","Full refund; no questions asked"],
+        ["Monthly plan — after 7 days","No refund; service already rendered"],
+        ["Annual plan — within 30 days","Full refund if < 3 sessions recorded"],
+        ["Annual plan — after 30 days","Pro-rated refund for unused months; Finance approval required"],
+        ["Service failure (our fault)","Full refund or credit regardless of policy; CS Director approval"]
+      ])
+    ]}
+  ]
+},
+"customer-support__venue-hardware": {
+  desc:"On-site support guide for camera hardware malfunctions, network connectivity, and emergency venue escalations.",
+  meta:{version:"v1.9", updated:"Jul 2026", owner:"DevOps Manager", status:"Active"},
+  tabs:[
+    {name:"Hardware Diagnostics", sections:[
+      CL("Remote Diagnostic Checklist", [
+        ["Camera appears in admin portal → Venues → Cameras with online/offline status","Required"],
+        ["Last successful heartbeat confirmed (should be within 5 minutes if online)","Required"],
+        ["Remote reboot attempted via Admin → Camera → Reboot"],
+        ["Firmware version checked — update if > 2 minor versions behind"],
+        ["Camera error log reviewed for repeated error codes"],
+        ["Power cycle confirmed by customer (unplug 30 seconds, plug back in)"],
+        ["If all remote steps fail: schedule on-site visit with Field Tech","Required"]
+      ]),
+      TB("Common Hardware Fault Codes", ["Fault Code","Diagnosis & Resolution"], [
+        ["ERR-CAM-001 (No Signal)","Power or cable issue; check physical connections before remote steps"],
+        ["ERR-CAM-002 (Overheating)","Camera in direct sunlight or enclosed space; improve ventilation"],
+        ["ERR-CAM-003 (Storage Full)","On-device storage full; remote wipe of old footage via admin portal"],
+        ["ERR-CAM-004 (Firmware Corrupt)","Force firmware re-flash from admin; if fails, on-site replacement required"],
+        ["ERR-NET-001 (WiFi Disconnect)","Signal strength too low; request venue to move access point or add extender"]
+      ])
+    ]},
+    {name:"Network & On-Site", sections:[
+      ST("Network Troubleshooting Steps", [
+        ["Ask customer to run a speed test at the camera location","Minimum: 10 Mbps upload for single camera; 25 Mbps for dual camera"],
+        ["Confirm camera is on dedicated IoT VLAN, not guest WiFi","Guest networks often have client isolation; cameras cannot reach cloud endpoint"],
+        ["Check firewall rules: UDP 9999 (discovery) and HTTPS 443 (data) must be open","IT contact at venue often required; provide them the network spec sheet"],
+        ["If camera is far from access point: recommend WiFi extender placement","Signal strength below -70 dBm will cause frequent disconnections"],
+        ["Test with mobile hotspot to isolate venue network as root cause","If hotspot works but venue WiFi does not: venue network configuration is the issue"]
+      ]),
+      CL("Emergency On-Site Support Protocol", [
+        ["Emergency on-site requests raised by customer directly via phone support","Required"],
+        ["CS Director approval required before dispatching Field Tech for emergency visit"],
+        ["Field Tech dispatched within 4 hours for P1 issues (match day camera failure)","Required"],
+        ["Replacement camera unit prepared and taken on-site if hardware fault suspected"],
+        ["On-site visit outcomes documented in admin portal within 24 hours of visit"],
+        ["Follow-up call with customer within 2 business days to confirm resolution","Required"]
+      ])
+    ]}
+  ]
+},
+"customer-support__general-inquiries": {
+  desc:"Response guide for feature questions, pricing inquiries, product feedback, and partnership requests.",
+  meta:{version:"v1.7", updated:"Jul 2026", owner:"Support Manager", status:"Active"},
+  tabs:[
+    {name:"FAQ Response Guide", sections:[
+      TB("Feature & Product Questions", ["Common Question","Approved Response Summary"], [
+        ["Can I download the raw video?","Yes; from the video portal, use the Download button. Raw file is MP4 format."],
+        ["How many cameras can I use?","Up to 2 cameras per venue on all plans. Multi-venue plans can have 2 cameras per venue."],
+        ["Does it work offline?","The app requires internet to start a session. On-device buffering handles brief outages during recording."],
+        ["Can I share videos publicly?","Yes; secure shareable links can be generated. Links expire after 7 days by default; extendable to 30."],
+        ["Is there an API?","API access is available on the Enterprise plan. Refer to Sales for API documentation and pricing."]
+      ]),
+      CL("Response Guidelines", [
+        ["All feature questions answered with a specific, actionable answer — avoid vague responses","Required"],
+        ["Pricing questions: provide plan overview and link to pricing page; do not quote custom pricing without Sales involvement"],
+        ["Never promise a feature that is not currently live — link to public roadmap for upcoming items"],
+        ["Partnership or reseller requests forwarded to partnerships@company.com within 24 hours","Required"],
+        ["All responses reviewed against the Approved Response Library before sending"],
+        ["Unanswerable questions escalated to Product team; response due within 2 business days"]
+      ])
+    ]},
+    {name:"Feedback Handling", sections:[
+      ST("Feedback Escalation Steps", [
+        ["Acknowledge all feedback within 4 business hours","Confirm receipt; validate the customer's experience; do not dismiss or over-promise"],
+        ["Categorise feedback: Bug, Feature Request, UX Improvement, or Compliment","Log in the internal feedback tracker (Notion database: Customer Feedback)"],
+        ["Bug reports: create Jira ticket and link to customer ticket","P2 priority if reproducible; P3 if isolated incident; notify customer of ticket number"],
+        ["Feature requests: submit to Product Manager via weekly feedback digest","Digest compiled every Friday; high-vote items reviewed in monthly Product Planning"],
+        ["Compliments: share to #customer-wins Slack channel within 24 hours","Tag CS Manager and Account Owner; use for case study or testimonial follow-up"]
+      ]),
+      CL("Feedback Handling Checklist", [
+        ["Customer receives a response — never let feedback go unacknowledged","Required"],
+        ["Feedback logged in Notion tracker with customer name, date, and category"],
+        ["If feedback impacts NPS or renewal risk: alert CS Manager immediately","Required"],
+        ["Follow-up sent to customer if their feature request is added to the roadmap"],
+        ["Monthly summary of feedback themes presented to Product and Leadership","Required"]
+      ])
+    ]}
+  ]
+}
+};
 
 const WORKFLOWS = {
   "customer-acquisition": [["Campaign","Traffic & lead gen"],["Lead Capture","Form / demo request"],["Lead Scoring","Auto-qualify via CRM"],["MQL Review","Marketing qualifies"],["SQL Handoff","Passed to Sales"],["Discovery","Call & needs analysis"],["Product Demo","Live demo delivered"],["Proposal","Pricing & contract"],["Contract Won","Signed & booked"],["Onboarding","CS team takes over"]],
@@ -641,16 +1684,24 @@ function renderBranchSection(key){
     <div class="branch-grid">${sec.items.map(it=>{
       const c = COLORS[it.color];
       const bid = branchId(key, it.slug);
+      const doc = TOPIC_DOCS[bid];
       return `<div class="branch-card" id="branch-${bid}" data-branch="${bid}">
         <div class="branch-head" data-toggle="${bid}">
           <div class="branch-chip" style="background:${c.bg};color:${c.c}">${esc(it.mono)}</div>
           <div class="branch-info">
             <h4>${esc(it.title)}</h4>
+            ${doc ? `<p class="branch-desc">${esc(doc.desc)}</p>` : ""}
             <span class="branch-tag" style="background:${c.bg};color:${c.c}">${esc(it.tag)}</span>
             <span class="branch-doc-count" data-count="${bid}">0 documents</span>
           </div>
           <svg class="branch-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
+        ${doc ? `<div class="branch-foot">
+          <button class="branch-viewdoc-btn" data-viewdoc="${bid}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            View Full Document
+          </button>
+        </div>` : ""}
         <div class="branch-body" data-body="${bid}"></div>
       </div>`;
     }).join("")}</div>
@@ -815,6 +1866,105 @@ function branchLabel(bid){
     if(found) return found.title;
   }
   return bid;
+}
+
+function findBranchItem(bid){
+  for(const key in BRANCH_SECTIONS){
+    const found = BRANCH_SECTIONS[key].items.find(it=>branchId(key,it.slug)===bid);
+    if(found) return found;
+  }
+  return null;
+}
+
+/* ============================== Document Viewer (View Full Document) ============================== */
+function renderDocSection(sec){
+  if(sec.type==="checklist"){
+    return `<div class="docmodal-section">
+      <h5>${esc(sec.title)}</h5>
+      <div class="doc-checklist">${sec.items.map(it=>{
+        const text = it[0], tag = it[1];
+        return `<div class="doc-check-row">
+          <span class="doc-check-box"></span>
+          <span class="doc-check-text">${esc(text)}</span>
+          ${tag ? `<span class="doc-check-tag ${esc(tag.toLowerCase())}">${esc(tag)}</span>` : ""}
+        </div>`;
+      }).join("")}</div>
+    </div>`;
+  }
+  if(sec.type==="table"){
+    return `<div class="docmodal-section">
+      <h5>${esc(sec.title)}</h5>
+      <div class="doc-table-wrap"><table class="doc-table">
+        <thead><tr>${sec.cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead>
+        <tbody>${sec.rows.map(r=>`<tr>${r.map((cell,i)=>`<td${i===0?' class="doc-table-key"':''}>${esc(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table></div>
+    </div>`;
+  }
+  if(sec.type==="steps"){
+    return `<div class="docmodal-section">
+      <h5>${esc(sec.title)}</h5>
+      <div class="doc-steps">${sec.items.map((it,i)=>{
+        const title = it[0], d = it[1];
+        return `<div class="doc-step-row">
+          <span class="doc-step-num">${i+1}</span>
+          <div><div class="doc-step-title">${esc(title)}</div>${d?`<div class="doc-step-desc">${esc(d)}</div>`:""}</div>
+        </div>`;
+      }).join("")}</div>
+    </div>`;
+  }
+  if(sec.type==="milestones"){
+    return `<div class="docmodal-section">
+      <h5>${esc(sec.title)}</h5>
+      <div class="doc-milestones">${sec.groups.map(g=>{
+        const label = g[0], items = g[1];
+        return `<div class="doc-milestone-group">
+          <div class="doc-milestone-label">${esc(label)}</div>
+          <ul>${items.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+        </div>`;
+      }).join("")}</div>
+    </div>`;
+  }
+  return "";
+}
+
+function openDocViewer(bid, tabIndex){
+  const doc = TOPIC_DOCS[bid]; if(!doc) return;
+  const item = findBranchItem(bid); if(!item) return;
+  tabIndex = tabIndex || 0;
+  if(tabIndex<0 || tabIndex>=doc.tabs.length) tabIndex = 0;
+  const c = COLORS[item.color];
+  const tab = doc.tabs[tabIndex];
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "docviewer";
+  box.style.width = "760px";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <div class="docmodal-header" style="background:${c.bg}">
+      <div class="docmodal-icon" style="color:${c.c}">${esc(item.mono)}</div>
+      <div class="docmodal-headtext">
+        <h3>${esc(item.title)}</h3>
+        <p>${esc(doc.desc)}</p>
+        <div class="docmodal-meta">
+          <span class="docmodal-chip">${esc(doc.meta.version)}</span>
+          <span class="docmodal-chip">Updated ${esc(doc.meta.updated)}</span>
+          <span class="docmodal-chip">${esc(doc.meta.owner)}</span>
+          <span class="docmodal-chip status">${esc(doc.meta.status)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="docmodal-tabs">
+      ${doc.tabs.map((t,i)=>`<button class="docmodal-tabbtn ${i===tabIndex?'active':''}" data-doctab="${i}">${esc(t.name)}</button>`).join("")}
+    </div>
+    <div class="docmodal-body">
+      ${tab.sections.map(renderDocSection).join("")}
+    </div>
+  `;
+  box.querySelectorAll("[data-doctab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>openDocViewer(bid, parseInt(btn.dataset.doctab,10)));
+  });
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  overlay.classList.add("show");
 }
 
 function downloadFile(id){
@@ -1394,6 +2544,14 @@ function renderAllPages(){
       const wasOpen = card.classList.contains("open");
       card.classList.toggle("open");
       if(!wasOpen) renderDocBody(bid);
+    });
+  });
+
+  // wire "View Full Document" buttons
+  wrap.querySelectorAll("[data-viewdoc]").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      openDocViewer(btn.dataset.viewdoc);
     });
   });
 
