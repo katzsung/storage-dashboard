@@ -75,8 +75,18 @@
   .cust-info .cmeta{font-size:11px;color:var(--slate-500);}
   .cust-actions{display:flex;gap:4px;}
   .cust-form{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--slate-200);}
-  .cust-form input{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;}
-  .cust-form input:focus{border-color:var(--purple);}
+  .cust-form input, .cust-form textarea{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;font-family:inherit;}
+  .cust-form input:focus, .cust-form textarea:focus{border-color:var(--purple);}
+  .cust-form textarea{resize:vertical;min-height:70px;line-height:1.5;}
+  .cust-form-row{display:flex;gap:8px;}
+  .cust-form-row input{flex:1;min-width:0;}
+  .cust-form-label{font-size:11px;font-weight:700;color:var(--slate-500);margin:2px 0 -3px;}
+
+  /* Customer notes panel (profile page) */
+  .cust-notes-panel{white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--slate-700);}
+  .cust-notes-empty{font-size:12.5px;color:var(--slate-500);}
+  .cust-contact-row{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--slate-500);margin-top:2px;}
+  .cust-contact-row span{display:inline-flex;align-items:center;gap:5px;}
 
   /* Customer dashboard */
   .dash-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
@@ -2109,8 +2119,9 @@ async function setActiveCustomer(id){
   document.querySelectorAll(".branch-card.open").forEach(card=>renderDocBody(card.dataset.branch));
 }
 
-async function addCustomerRecord(name, company, email){
-  const rec = {id:uid(), name:name.trim(), company:(company||"").trim(), email:(email||"").trim(), createdAt:Date.now()};
+async function addCustomerRecord(name, company, email, phone, title, notes){
+  const rec = {id:uid(), name:name.trim(), company:(company||"").trim(), email:(email||"").trim(),
+    phone:(phone||"").trim(), title:(title||"").trim(), notes:(notes||"").trim(), createdAt:Date.now()};
   await put("customers", rec);
   customers.push(rec);
   logActivity(`Added customer "${rec.name}"`, "var(--purple)");
@@ -2118,12 +2129,15 @@ async function addCustomerRecord(name, company, email){
   return rec;
 }
 
-async function updateCustomerRecord(id, name, company, email){
+async function updateCustomerRecord(id, name, company, email, phone, title, notes){
   const c = customerById(id); if(!c) return null;
   const oldName = c.name;
   c.name = name.trim();
   c.company = (company||"").trim();
   c.email = (email||"").trim();
+  c.phone = (phone||"").trim();
+  c.title = (title||"").trim();
+  c.notes = (notes||"").trim();
   await put("customers", c);
   logActivity(oldName===c.name ? `Updated customer "${c.name}"` : `Renamed customer "${oldName}" to "${c.name}"`, "var(--purple)");
   updateCustomerSwitcherUI();
@@ -2162,6 +2176,10 @@ function openCustomerModal(returnBid){
       <input type="text" id="custName" placeholder="Customer / company name *">
       <input type="text" id="custCompany" placeholder="Company (optional)">
       <input type="text" id="custEmail" placeholder="Email (optional)">
+      <div class="cust-form-row">
+        <input type="text" id="custPhone" placeholder="Phone (optional)">
+        <input type="text" id="custTitle" placeholder="Job title (optional)">
+      </div>
       <button class="btn btn-primary" id="custAddBtn" style="justify-content:center;">+ Add customer</button>
     </div>
   `;
@@ -2201,12 +2219,15 @@ function openCustomerModal(returnBid){
     const nameEl = document.getElementById("custName");
     const name = nameEl.value.trim();
     if(!name){ nameEl.focus(); return; }
-    const rec = await addCustomerRecord(name, document.getElementById("custCompany").value, document.getElementById("custEmail").value);
+    const rec = await addCustomerRecord(name, document.getElementById("custCompany").value, document.getElementById("custEmail").value,
+      document.getElementById("custPhone").value, document.getElementById("custTitle").value);
     toast(`Customer "${rec.name}" added`);
     setActiveCustomer(rec.id);
     document.getElementById("custName").value = "";
     document.getElementById("custCompany").value = "";
     document.getElementById("custEmail").value = "";
+    document.getElementById("custPhone").value = "";
+    document.getElementById("custTitle").value = "";
     renderList(document.getElementById("custSearch").value);
   };
 }
@@ -2216,7 +2237,7 @@ function openEditCustomerModal(customerId, onSaved){
   const overlay = document.getElementById("modalOverlay");
   const box = document.getElementById("modalBox");
   box.dataset.mode = "edit-customer";
-  box.style.width = "380px";
+  box.style.width = "420px";
   box.innerHTML = `
     <button class="modal-close" id="modalCloseBtn">✕</button>
     <h3>Edit Customer</h3>
@@ -2224,6 +2245,12 @@ function openEditCustomerModal(customerId, onSaved){
       <input type="text" id="editCustName" placeholder="Customer / company name *" value="${esc(c.name)}">
       <input type="text" id="editCustCompany" placeholder="Company (optional)" value="${esc(c.company||"")}">
       <input type="text" id="editCustEmail" placeholder="Email (optional)" value="${esc(c.email||"")}">
+      <div class="cust-form-row">
+        <input type="text" id="editCustPhone" placeholder="Phone (optional)" value="${esc(c.phone||"")}">
+        <input type="text" id="editCustTitle" placeholder="Job title (optional)" value="${esc(c.title||"")}">
+      </div>
+      <div class="cust-form-label">Notes</div>
+      <textarea id="editCustNotes" placeholder="Internal notes about this customer...">${esc(c.notes||"")}</textarea>
     </div>
     <div class="modal-actions" style="margin-top:16px;">
       <button class="btn btn-ghost" id="editCustCancel">Cancel</button>
@@ -2238,7 +2265,8 @@ function openEditCustomerModal(customerId, onSaved){
   const save = async ()=>{
     const name = nameEl.value.trim();
     if(!name){ nameEl.focus(); return; }
-    await updateCustomerRecord(customerId, name, document.getElementById("editCustCompany").value, document.getElementById("editCustEmail").value);
+    await updateCustomerRecord(customerId, name, document.getElementById("editCustCompany").value, document.getElementById("editCustEmail").value,
+      document.getElementById("editCustPhone").value, document.getElementById("editCustTitle").value, document.getElementById("editCustNotes").value);
     toast("Customer updated");
     closeModal();
     if(onSaved) onSaved();
@@ -2313,7 +2341,7 @@ function renderCustomerDashboardBody(searchText){
             <div class="cust-avatar-lg" style="background:${customerColor(c.id)}">${esc(initials)}</div>
             <div class="flex1">
               <div class="cdc-name">${esc(c.name)}</div>
-              <div class="cdc-meta">${esc(c.company||"No company")}</div>
+              <div class="cdc-meta">${c.title?esc(c.title)+" · ":""}${esc(c.company||"No company")}</div>
             </div>
           </div>
           <div class="cust-stage-row">${stats.map(s=>`<div class="stage-chip ${s.touched>0?'on':''}" style="--chip-color:${COLORS[s.color].c};--chip-bg:${COLORS[s.color].bg}">${esc(s.label)} ${s.touched}/${s.total}</div>`).join("")}</div>
@@ -2510,7 +2538,11 @@ function renderCustomerProfileBody(customerId){
       <div class="cust-avatar" style="background:${customerColor(customerId)}">${esc(initials)}</div>
       <div>
         <h2>${esc(c.name)}</h2>
-        <div class="meta">${esc(c.company||"No company")}${c.email?" · "+esc(c.email):""} · ${docs.length} document${docs.length===1?"":"s"} · ${formatBytes(totalBytes)}</div>
+        <div class="meta">${c.title?esc(c.title)+" · ":""}${esc(c.company||"No company")} · ${docs.length} document${docs.length===1?"":"s"} · ${formatBytes(totalBytes)}</div>
+        ${(c.email||c.phone) ? `<div class="cust-contact-row">
+          ${c.email?`<span>✉ ${esc(c.email)}</span>`:""}
+          ${c.phone?`<span>☎ ${esc(c.phone)}</span>`:""}
+        </div>` : ""}
       </div>
       <div class="profile-actions">
         <button class="btn btn-ghost" id="editCustFromProfile">✎ Edit details</button>
@@ -2521,6 +2553,11 @@ function renderCustomerProfileBody(customerId){
 
     <div class="section-head"><span class="section-bar"></span><h2>Journey Summary</h2></div>
     ${renderJourneyStepper(customerId)}
+
+    <div class="section-head"><span class="section-bar"></span><h2>Notes</h2></div>
+    <div class="panel" style="margin-bottom:24px;">
+      ${c.notes ? `<div class="cust-notes-panel">${esc(c.notes)}</div>` : `<div class="cust-notes-empty">No notes yet. Click "Edit details" to add internal notes about this customer.</div>`}
+    </div>
 
     <div class="section-head"><span class="section-bar"></span><h2>Add a Document</h2></div>
     <div class="panel" style="margin-bottom:24px;">
