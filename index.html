@@ -81,12 +81,18 @@
   .cust-form-row{display:flex;gap:8px;}
   .cust-form-row input{flex:1;min-width:0;}
   .cust-form-label{font-size:11px;font-weight:700;color:var(--slate-500);margin:2px 0 -3px;}
+  .cust-form-heading{font-size:11px;font-weight:800;color:var(--purple);text-transform:uppercase;letter-spacing:.04em;
+    margin:14px 0 -1px;padding-top:12px;border-top:1px solid var(--slate-200);}
+  .cust-form-heading:first-child{margin-top:0;padding-top:0;border-top:none;}
 
   /* Customer notes panel (profile page) */
   .cust-notes-panel{white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--slate-700);}
   .cust-notes-empty{font-size:12.5px;color:var(--slate-500);}
   .cust-contact-row{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--slate-500);margin-top:2px;}
-  .cust-contact-row span{display:inline-flex;align-items:center;gap:5px;}
+  .cust-contact-row span, .cust-contact-row a{display:inline-flex;align-items:center;gap:5px;color:inherit;text-decoration:none;}
+  .cust-contact-row a:hover{color:var(--purple);text-decoration:underline;}
+  .cust-address-row{font-size:12.5px;color:var(--slate-500);margin-top:4px;display:flex;align-items:flex-start;gap:5px;}
+  .cust-address-row span{white-space:pre-wrap;line-height:1.4;}
 
   /* Customer dashboard */
   .dash-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
@@ -2119,9 +2125,11 @@ async function setActiveCustomer(id){
   document.querySelectorAll(".branch-card.open").forEach(card=>renderDocBody(card.dataset.branch));
 }
 
-async function addCustomerRecord(name, company, email, phone, title, notes){
+async function addCustomerRecord(name, company, email, phone, title, notes, industry, website, address, taxId){
   const rec = {id:uid(), name:name.trim(), company:(company||"").trim(), email:(email||"").trim(),
-    phone:(phone||"").trim(), title:(title||"").trim(), notes:(notes||"").trim(), createdAt:Date.now()};
+    phone:(phone||"").trim(), title:(title||"").trim(), notes:(notes||"").trim(),
+    industry:(industry||"").trim(), website:(website||"").trim(), address:(address||"").trim(), taxId:(taxId||"").trim(),
+    createdAt:Date.now()};
   await put("customers", rec);
   customers.push(rec);
   logActivity(`Added customer "${rec.name}"`, "var(--purple)");
@@ -2129,7 +2137,7 @@ async function addCustomerRecord(name, company, email, phone, title, notes){
   return rec;
 }
 
-async function updateCustomerRecord(id, name, company, email, phone, title, notes){
+async function updateCustomerRecord(id, name, company, email, phone, title, notes, industry, website, address, taxId){
   const c = customerById(id); if(!c) return null;
   const oldName = c.name;
   c.name = name.trim();
@@ -2138,6 +2146,10 @@ async function updateCustomerRecord(id, name, company, email, phone, title, note
   c.phone = (phone||"").trim();
   c.title = (title||"").trim();
   c.notes = (notes||"").trim();
+  c.industry = (industry||"").trim();
+  c.website = (website||"").trim();
+  c.address = (address||"").trim();
+  c.taxId = (taxId||"").trim();
   await put("customers", c);
   logActivity(oldName===c.name ? `Updated customer "${c.name}"` : `Renamed customer "${oldName}" to "${c.name}"`, "var(--purple)");
   updateCustomerSwitcherUI();
@@ -2237,18 +2249,24 @@ function openEditCustomerModal(customerId, onSaved){
   const overlay = document.getElementById("modalOverlay");
   const box = document.getElementById("modalBox");
   box.dataset.mode = "edit-customer";
-  box.style.width = "420px";
+  box.style.width = "460px";
   box.innerHTML = `
     <button class="modal-close" id="modalCloseBtn">✕</button>
     <h3>Edit Customer</h3>
     <div class="cust-form" style="margin-top:0;padding-top:0;border-top:none;">
-      <input type="text" id="editCustName" placeholder="Customer / company name *" value="${esc(c.name)}">
-      <input type="text" id="editCustCompany" placeholder="Company (optional)" value="${esc(c.company||"")}">
-      <input type="text" id="editCustEmail" placeholder="Email (optional)" value="${esc(c.email||"")}">
-      <div class="cust-form-row">
-        <input type="text" id="editCustPhone" placeholder="Phone (optional)" value="${esc(c.phone||"")}">
-        <input type="text" id="editCustTitle" placeholder="Job title (optional)" value="${esc(c.title||"")}">
-      </div>
+      <div class="cust-form-heading">Personal Contact Details</div>
+      <input type="text" id="editCustName" placeholder="Full name *" value="${esc(c.name)}">
+      <input type="text" id="editCustTitle" placeholder="Job title / role" value="${esc(c.title||"")}">
+      <input type="text" id="editCustEmail" placeholder="Email address" value="${esc(c.email||"")}">
+      <input type="text" id="editCustPhone" placeholder="Phone number" value="${esc(c.phone||"")}">
+
+      <div class="cust-form-heading">Company Details</div>
+      <input type="text" id="editCustCompany" placeholder="Company name" value="${esc(c.company||"")}">
+      <input type="text" id="editCustIndustry" placeholder="Industry / sector" value="${esc(c.industry||"")}">
+      <input type="text" id="editCustWebsite" placeholder="Company website" value="${esc(c.website||"")}">
+      <textarea id="editCustAddress" placeholder="Business address (street, city, state/province, postal code)" style="min-height:56px;">${esc(c.address||"")}</textarea>
+      <input type="text" id="editCustTaxId" placeholder="Tax ID / registration number" value="${esc(c.taxId||"")}">
+
       <div class="cust-form-label">Notes</div>
       <textarea id="editCustNotes" placeholder="Internal notes about this customer...">${esc(c.notes||"")}</textarea>
     </div>
@@ -2266,7 +2284,9 @@ function openEditCustomerModal(customerId, onSaved){
     const name = nameEl.value.trim();
     if(!name){ nameEl.focus(); return; }
     await updateCustomerRecord(customerId, name, document.getElementById("editCustCompany").value, document.getElementById("editCustEmail").value,
-      document.getElementById("editCustPhone").value, document.getElementById("editCustTitle").value, document.getElementById("editCustNotes").value);
+      document.getElementById("editCustPhone").value, document.getElementById("editCustTitle").value, document.getElementById("editCustNotes").value,
+      document.getElementById("editCustIndustry").value, document.getElementById("editCustWebsite").value,
+      document.getElementById("editCustAddress").value, document.getElementById("editCustTaxId").value);
     toast("Customer updated");
     closeModal();
     if(onSaved) onSaved();
@@ -2297,7 +2317,8 @@ function openEditNotesModal(customerId, onSaved){
   document.getElementById("modalCloseBtn").onclick = closeModal;
   document.getElementById("editNotesCancel").onclick = closeModal;
   document.getElementById("editNotesSave").onclick = async ()=>{
-    await updateCustomerRecord(customerId, c.name, c.company, c.email, c.phone, c.title, notesEl.value);
+    await updateCustomerRecord(customerId, c.name, c.company, c.email, c.phone, c.title, notesEl.value,
+      c.industry, c.website, c.address, c.taxId);
     toast("Notes updated");
     closeModal();
     if(onSaved) onSaved();
@@ -2567,11 +2588,14 @@ function renderCustomerProfileBody(customerId){
       <div class="cust-avatar" style="background:${customerColor(customerId)}">${esc(initials)}</div>
       <div>
         <h2>${esc(c.name)}</h2>
-        <div class="meta">${c.title?esc(c.title)+" · ":""}${esc(c.company||"No company")} · ${docs.length} document${docs.length===1?"":"s"} · ${formatBytes(totalBytes)}</div>
-        ${(c.email||c.phone) ? `<div class="cust-contact-row">
+        <div class="meta">${c.title?esc(c.title)+" · ":""}${esc(c.company||"No company")}${c.industry?" · "+esc(c.industry):""} · ${docs.length} document${docs.length===1?"":"s"} · ${formatBytes(totalBytes)}</div>
+        ${(c.email||c.phone||c.website||c.taxId) ? `<div class="cust-contact-row">
           ${c.email?`<span>✉ ${esc(c.email)}</span>`:""}
           ${c.phone?`<span>☎ ${esc(c.phone)}</span>`:""}
+          ${c.website?`<a href="${esc(/^https?:\/\//i.test(c.website)?c.website:'https://'+c.website)}" target="_blank" rel="noopener">🔗 ${esc(c.website)}</a>`:""}
+          ${c.taxId?`<span># ${esc(c.taxId)}</span>`:""}
         </div>` : ""}
+        ${c.address?`<div class="cust-address-row">📍 <span>${esc(c.address)}</span></div>`:""}
       </div>
       <div class="profile-actions">
         <button class="btn btn-ghost" id="editCustFromProfile">✎ Edit details</button>
