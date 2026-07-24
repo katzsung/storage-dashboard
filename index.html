@@ -158,13 +158,21 @@
   /* Org chart */
   .org-wrap{overflow-x:auto;padding:6px;}
   .org-tree{display:flex;flex-direction:column;align-items:center;gap:0;min-width:600px;}
-  .org-row{display:flex;justify-content:center;gap:36px;position:relative;}
-  .org-children{display:flex;flex-direction:column;align-items:center;}
+  .org-row{display:flex;justify-content:center;gap:36px;position:relative;padding-top:22px;}
+  .org-row::before{content:'';position:absolute;top:0;left:50%;width:0;border-left:1.5px solid var(--slate-300);height:22px;}
+  .org-children{display:flex;flex-direction:column;align-items:center;position:relative;padding-top:22px;}
+  .org-children::before,.org-children::after{content:'';position:absolute;top:0;height:22px;}
+  .org-children::before{right:50%;left:0;border-top:1.5px solid var(--slate-300);}
+  .org-children::after{left:50%;right:0;border-top:1.5px solid var(--slate-300);border-left:1.5px solid var(--slate-300);}
+  .org-children:first-child::before{border-top:none;}
+  .org-children:last-child::after{border-top:none;}
+  .org-children:only-child::before,.org-children:only-child::after{display:none;}
+  .org-children:only-child{padding-top:0;}
   .org-node{border:1.5px solid; border-radius:12px;padding:10px 16px;background:#fff;text-align:center;min-width:130px;
     font-size:12.5px;font-weight:800;margin:8px 6px;position:relative;}
+  .org-children>.org-node::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid var(--slate-400);}
   .org-node .sub{font-weight:500;color:var(--slate-500);font-size:11px;margin-top:2px;}
-  .org-connector{width:2px;background:var(--slate-300);height:18px;margin:0 auto;}
-  .org-hbar{height:2px;background:var(--slate-300);}
   .legend-row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--slate-200);}
   .legend-chip{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--slate-700);}
   .legend-dot{width:11px;height:11px;border-radius:4px;}
@@ -544,9 +552,8 @@ async function logActivity(text, color){
 /* ============================== Rendering helpers ============================== */
 function renderOrgTree(node){
   const col = COLORS[node.color]||COLORS.purple;
-  let html = `<div class="org-node" style="border-color:${col.c};color:${col.c}">${esc(node.name)}${node.sub?`<div class="sub">${esc(node.sub)}</div>`:""}</div>`;
+  let html = `<div class="org-node" style="border-color:${col.c};color:${col.c};background:${col.bg}">${esc(node.name)}${node.sub?`<div class="sub">${esc(node.sub)}</div>`:""}</div>`;
   if(node.children && node.children.length){
-    html += `<div class="org-connector"></div>`;
     html += `<div class="org-row">`;
     html += node.children.map(c=>`<div class="org-children">${renderOrgTree(c)}</div>`).join("");
     html += `</div>`;
