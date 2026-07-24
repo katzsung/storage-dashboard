@@ -77,6 +77,28 @@
   .cust-form input{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;}
   .cust-form input:focus{border-color:var(--purple);}
 
+  /* Customer dashboard */
+  .dash-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .dash-toolbar .search-box{flex:1;min-width:200px;}
+  .dash-toolbar .search-box input{width:100%;}
+  .cust-dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .cust-dash-card{border:1px solid var(--slate-200);border-radius:16px;background:#fff;padding:16px;cursor:pointer;transition:.15s;}
+  .cust-dash-card:hover{box-shadow:var(--shadow-lg);border-color:var(--slate-300);transform:translateY(-2px);}
+  .cust-dash-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .cust-avatar-lg{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;color:#fff;flex-shrink:0;}
+  .cdc-name{font-size:14px;font-weight:800;}
+  .cdc-meta{font-size:11.5px;color:var(--slate-500);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cust-stage-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .stage-chip{font-size:10px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--slate-100);color:var(--slate-500);
+    border:1px solid var(--slate-200);}
+  .stage-chip.on{background:var(--chip-bg);color:var(--chip-color);border-color:var(--chip-color);}
+  .cust-dash-foot{display:flex;justify-content:space-between;font-size:11px;color:var(--slate-500);font-weight:600;
+    border-top:1px solid var(--slate-200);padding-top:10px;}
+  .dash-empty{padding:60px 20px;text-align:center;color:var(--slate-500);}
+  .dash-empty .btn{margin-top:12px;}
+  .flex1{flex:1;min-width:0;}
+
   .container{max-width:1240px;margin:0 auto;padding:0 24px 90px;}
   .tabpage{display:none;}
   .tabpage.active{display:block;}
@@ -232,6 +254,7 @@
   <div class="nav-inner" id="navInner">
     <div class="brand"><span class="brand-dot"></span>RallySight</div>
     <button class="navtab disabled" title="Not available in this prototype">Architecture</button>
+    <button class="navtab" data-tab="dashboard">Dashboard</button>
     <button class="navtab" data-tab="business-map">Business Map</button>
     <button class="navtab" data-tab="customer-acquisition">Customer Acquisition</button>
     <button class="navtab" data-tab="service-delivery">Service Delivery</button>
@@ -495,6 +518,30 @@ function renderInfoSection(key){
 
 function branchId(tabKey, slug){ return tabKey+"__"+slug; }
 
+const STAGE_META = [
+  {key:"customer-acquisition", label:"Acquisition", color:"blue"},
+  {key:"service-delivery", label:"Service Delivery", color:"teal"},
+  {key:"revenue-billing", label:"Revenue & Billing", color:"green"},
+  {key:"customer-support", label:"Support", color:"red"}
+];
+
+function customerStageStats(customerId){
+  return STAGE_META.map(s=>{
+    const branchIds = BRANCH_SECTIONS[s.key].items.map(it=>branchId(s.key, it.slug));
+    const touched = new Set(files.filter(f=>f.customerId===customerId && branchIds.includes(f.folderId)).map(f=>f.folderId));
+    return {...s, touched: touched.size, total: branchIds.length};
+  });
+}
+
+function customerFiles(customerId){
+  return files.filter(f=>f.customerId===customerId).sort((a,b)=>b.createdAt-a.createdAt);
+}
+
+function customerLastActivity(customerId){
+  const list = customerFiles(customerId);
+  return list.length ? list[0].createdAt : customerById(customerId)?.createdAt || 0;
+}
+
 function renderBranchSection(key){
   const sec = BRANCH_SECTIONS[key]; if(!sec) return "";
   return `<div class="section">
@@ -597,8 +644,6 @@ function renderBusinessMap(){
 }
 
 /* ============================== Document manager (per branch) ============================== */
-let activeBranchForUpload = null;
-
 function branchFiles(bid){ return files.filter(f=>f.folderId===bid); }
 
 function renderDocBody(bid, filterText){
@@ -642,7 +687,8 @@ function renderDocBody(bid, filterText){
   const dz = body.querySelector(`[data-dz]`);
   dz.addEventListener("click", ()=>{
     if(!activeCustomerId){ openCustomerModal(bid); return; }
-    activeBranchForUpload = bid; document.getElementById("fileInput").click();
+    pendingUpload = {bid, customerId: activeCustomerId, onDone: ()=>{ renderDocBody(bid); refreshDashboardBody(); }};
+    document.getElementById("fileInput").click();
   });
   ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); if(activeCustomerId) dz.classList.add("drag"); }));
   ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove("drag"); }));
@@ -661,18 +707,9 @@ function renderDocBody(bid, filterText){
 
 async function handleBranchFiles(bid, fileList){
   if(!activeCustomerId){ toast("Select a customer first"); openCustomerModal(bid); return; }
-  const list = Array.from(fileList);
-  for(const f of list){
-    const record = {id:uid(), name:f.name, type:f.type||"application/octet-stream", size:f.size, blob:f, folderId:bid, customerId:activeCustomerId, createdAt:Date.now()};
-    await put("files", record);
-    files.push(record);
-  }
-  const label = branchLabel(bid);
-  const cname = customerLabel(activeCustomerId);
-  logActivity(`Uploaded ${list.length} document${list.length===1?"":"s"} to "${label}" for ${cname}`, "var(--blue)");
-  toast(`${list.length} document${list.length===1?"":"s"} uploaded for ${cname}`);
+  await uploadFilesForCustomerBranch(activeCustomerId, bid, fileList);
   renderDocBody(bid);
-  updateStorageStats();
+  refreshDashboardBody();
 }
 
 function branchLabel(bid){
@@ -701,6 +738,7 @@ async function deleteFile(id, bid){
   toast("Deleted");
   renderDocBody(bid);
   updateStorageStats();
+  refreshDashboardBody();
 }
 
 /* ============================== Global storage stats / activity modal ============================== */
@@ -796,6 +834,7 @@ async function clearAll(){
     const countEl = document.querySelector(`[data-count="${bid}"]`);
     if(countEl) countEl.textContent = "0 documents";
   });
+  refreshDashboardBody();
 }
 
 function closeModal(){ document.getElementById("modalOverlay").classList.remove("show"); }
@@ -828,6 +867,7 @@ async function addCustomerRecord(name, company, email){
   await put("customers", rec);
   customers.push(rec);
   logActivity(`Added customer "${rec.name}"`, "var(--purple)");
+  refreshDashboardBody();
   return rec;
 }
 
@@ -843,7 +883,7 @@ async function deleteCustomerRecord(id){
   if(activeCustomerId===id){ activeCustomerId=null; await put("meta",{key:"activeCustomerId", value:null}); }
   logActivity(`Deleted customer "${c.name}"`, "var(--red)");
   updateCustomerSwitcherUI();
-  openCustomerModal();
+  refreshDashboardBody();
 }
 
 function openCustomerModal(returnBid){
@@ -886,7 +926,7 @@ function openCustomerModal(returnBid){
       closeModal();
       if(returnBid) renderDocBody(returnBid);
     }));
-    c1.querySelectorAll("[data-del-cust]").forEach(el=>el.addEventListener("click", (e)=>{ e.stopPropagation(); deleteCustomerRecord(el.dataset.delCust); }));
+    c1.querySelectorAll("[data-del-cust]").forEach(el=>el.addEventListener("click", async (e)=>{ e.stopPropagation(); await deleteCustomerRecord(el.dataset.delCust); openCustomerModal(returnBid); }));
   }
   renderList(search);
 
@@ -907,12 +947,199 @@ function openCustomerModal(returnBid){
 }
 
 /* ============================== Tabs / navigation ============================== */
-const TABS = ["business-map","customer-acquisition","service-delivery","revenue-billing","customer-support"];
+/* ============================== Customer Dashboard (main view) ============================== */
+let currentDashboardSearch = "";
+let pendingUpload = null;
+
+async function uploadFilesForCustomerBranch(customerId, bid, fileList){
+  const list = Array.from(fileList);
+  for(const f of list){
+    const record = {id:uid(), name:f.name, type:f.type||"application/octet-stream", size:f.size, blob:f, folderId:bid, customerId, createdAt:Date.now()};
+    await put("files", record);
+    files.push(record);
+  }
+  const label = branchLabel(bid);
+  const cname = customerLabel(customerId);
+  logActivity(`Uploaded ${list.length} document${list.length===1?"":"s"} to "${label}" for ${cname}`, "var(--blue)");
+  toast(`${list.length} document${list.length===1?"":"s"} uploaded for ${cname}`);
+  updateStorageStats();
+  return list.length;
+}
+
+function refreshAfterFileChange(bid){
+  const card = bid ? document.querySelector(`.branch-card[data-branch="${bid}"]`) : null;
+  if(card && card.classList.contains("open")) renderDocBody(bid);
+  refreshDashboardBody();
+}
+
+function refreshDashboardBody(){
+  if(document.getElementById("customerDashboardBody")) renderCustomerDashboardBody(currentDashboardSearch);
+}
+
+function renderCustomerDashboardBody(searchText){
+  currentDashboardSearch = searchText || "";
+  const container = document.getElementById("customerDashboardBody");
+  if(!container) return;
+  const q = currentDashboardSearch.toLowerCase();
+  const totalDocs = files.length;
+  const totalBytes = files.reduce((s,f)=>s+(f.size||0),0);
+  const fullyEngaged = customers.filter(c=>customerStageStats(c.id).every(s=>s.touched>0)).length;
+  const list = customers.filter(c=> !q || c.name.toLowerCase().includes(q) || (c.company||"").toLowerCase().includes(q))
+    .sort((a,b)=>customerLastActivity(b.id)-customerLastActivity(a.id));
+
+  container.innerHTML = `
+    <div class="stat-strip" style="margin-bottom:22px;">
+      <div class="stat-card"><div class="stat-num">${customers.length}</div><div class="stat-label">Customers</div></div>
+      <div class="stat-card"><div class="stat-num">${totalDocs}</div><div class="stat-label">Documents</div></div>
+      <div class="stat-card"><div class="stat-num">${formatBytes(totalBytes)}</div><div class="stat-label">Storage used</div></div>
+      <div class="stat-card"><div class="stat-num">${fullyEngaged}</div><div class="stat-label">Fully onboarded (all 4 stages)</div></div>
+    </div>
+    <div class="dash-toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="dashSearch" placeholder="Search customers or companies..." value="${esc(currentDashboardSearch)}">
+      </div>
+      <button class="btn btn-primary" id="dashAddCustBtn">+ Add Customer</button>
+    </div>
+    ${list.length ? `<div class="cust-dash-grid">${list.map(c=>{
+        const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+        const stats = customerStageStats(c.id);
+        const docs = customerFiles(c.id);
+        const size = docs.reduce((s,f)=>s+(f.size||0),0);
+        return `<div class="cust-dash-card" data-open-customer="${c.id}">
+          <div class="cust-dash-head">
+            <div class="cust-avatar-lg" style="background:${customerColor(c.id)}">${esc(initials)}</div>
+            <div class="flex1">
+              <div class="cdc-name">${esc(c.name)}</div>
+              <div class="cdc-meta">${esc(c.company||"No company")}</div>
+            </div>
+          </div>
+          <div class="cust-stage-row">${stats.map(s=>`<div class="stage-chip ${s.touched>0?'on':''}" style="--chip-color:${COLORS[s.color].c};--chip-bg:${COLORS[s.color].bg}">${esc(s.label)} ${s.touched}/${s.total}</div>`).join("")}</div>
+          <div class="cust-dash-foot"><span>${docs.length} document${docs.length===1?"":"s"}</span><span>${formatBytes(size)}</span><span>${docs.length?timeAgo(docs[0].createdAt):"No activity"}</span></div>
+        </div>`;
+      }).join("")}</div>`
+      : `<div class="dash-empty">
+          <div>${customers.length ? "No customers match that search." : "No customers yet. Add your first customer to start tracking their journey."}</div>
+          ${customers.length ? "" : `<button class="btn btn-primary" id="dashAddCustBtnEmpty">+ Add Customer</button>`}
+        </div>`}
+  `;
+
+  const searchEl = document.getElementById("dashSearch");
+  searchEl.addEventListener("input", e=>{ renderCustomerDashboardBody(e.target.value); });
+  if(currentDashboardSearch){ searchEl.focus(); searchEl.setSelectionRange(currentDashboardSearch.length, currentDashboardSearch.length); }
+  const addBtn = document.getElementById("dashAddCustBtn"); if(addBtn) addBtn.addEventListener("click", ()=>openCustomerModal());
+  const addBtnEmpty = document.getElementById("dashAddCustBtnEmpty"); if(addBtnEmpty) addBtnEmpty.addEventListener("click", ()=>openCustomerModal());
+  container.querySelectorAll("[data-open-customer]").forEach(el=>el.addEventListener("click", ()=>openCustomerDetailModal(el.dataset.openCustomer)));
+}
+
+function openCustomerDetailModal(customerId){
+  if(!customerById(customerId)) return;
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "customer-detail";
+  box.style.width = "640px";
+  renderCustomerDetailBody(customerId);
+  document.getElementById("modalOverlay").classList.add("show");
+}
+
+function renderCustomerDetailBody(customerId){
+  const c = customerById(customerId); if(!c) return;
+  const box = document.getElementById("modalBox");
+  const stats = customerStageStats(customerId);
+  const docs = customerFiles(customerId);
+  const totalBytes = docs.reduce((s,f)=>s+(f.size||0),0);
+  const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px;padding-right:30px;">
+      <div class="cust-avatar" style="width:46px;height:46px;font-size:15px;background:${customerColor(customerId)}">${esc(initials)}</div>
+      <div class="flex1" style="min-width:0;">
+        <h3 style="margin:0;">${esc(c.name)}</h3>
+        <div style="font-size:11.5px;color:var(--slate-500);">${esc(c.company||"")}${c.company&&c.email?" · ":""}${esc(c.email||"")}</div>
+      </div>
+      <button class="mini-btn" id="setActiveFromDetail" title="Set as active customer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+      <button class="mini-btn" id="deleteCustFromDetail" title="Delete customer">🗑</button>
+    </div>
+    <div class="cust-stage-row" style="margin:14px 0 16px;">${stats.map(s=>`<div class="stage-chip ${s.touched>0?'on':''}" style="--chip-color:${COLORS[s.color].c};--chip-bg:${COLORS[s.color].bg}">${esc(s.label)} ${s.touched}/${s.total}</div>`).join("")}</div>
+
+    <div style="background:var(--slate-100);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:12.5px;font-weight:700;margin-bottom:8px;">Add a document for ${esc(c.name)}</div>
+      <select id="detailBranchSelect" style="width:100%;padding:9px 11px;border:1px solid var(--slate-200);border-radius:9px;font-size:12.5px;margin-bottom:10px;">
+        ${STAGE_META.map(s=>`<optgroup label="${esc(s.label)}">${BRANCH_SECTIONS[s.key].items.map(it=>`<option value="${branchId(s.key,it.slug)}">${esc(it.title)}</option>`).join("")}</optgroup>`).join("")}
+      </select>
+      <div class="doc-dropzone" id="detailDropzone" style="margin-bottom:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Drag &amp; drop or click to upload to the selected service</span>
+      </div>
+    </div>
+
+    <div style="font-size:12.5px;font-weight:700;margin-bottom:8px;">Documents (${docs.length} · ${formatBytes(totalBytes)})</div>
+    <div class="doc-list">${docs.length ? docs.map(f=>`
+      <div class="doc-row">
+        <div class="doc-chip" style="background:var(--slate-200);color:var(--slate-700)">${esc(extOf(f.name))}</div>
+        <div class="flex1"><div class="doc-name">${esc(f.name)}</div><div class="doc-meta">${esc(branchLabel(f.folderId))} · ${formatBytes(f.size)} · ${timeAgo(f.createdAt)}</div></div>
+        <div class="doc-actions">
+          <button class="mini-btn" data-dl-detail="${f.id}" title="Download">⬇</button>
+          <button class="mini-btn" data-del-detail="${f.id}" data-belongs="${f.folderId}" title="Delete">🗑</button>
+        </div>
+      </div>`).join("") : `<div class="doc-empty">No documents yet for this customer.</div>`}
+    </div>
+  `;
+
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("setActiveFromDetail").onclick = ()=>{ setActiveCustomer(customerId); toast(`${c.name} set as active customer`); };
+  document.getElementById("deleteCustFromDetail").onclick = async ()=>{
+    await deleteCustomerRecord(customerId);
+    closeModal();
+    refreshDashboardBody();
+  };
+  box.querySelectorAll("[data-dl-detail]").forEach(b=>b.addEventListener("click", ()=>downloadFile(b.dataset.dlDetail)));
+  box.querySelectorAll("[data-del-detail]").forEach(b=>b.addEventListener("click", async ()=>{
+    const f = files.find(x=>x.id===b.dataset.delDetail); if(!f) return;
+    if(!confirm(`Delete "${f.name}"? This can't be undone.`)) return;
+    await del("files", f.id);
+    files = files.filter(x=>x.id!==f.id);
+    logActivity(`Deleted "${f.name}"`, "var(--red)");
+    toast("Deleted");
+    renderCustomerDetailBody(customerId);
+    refreshAfterFileChange(b.dataset.belongs);
+  }));
+
+  const dz = document.getElementById("detailDropzone");
+  const sel = document.getElementById("detailBranchSelect");
+  dz.addEventListener("click", ()=>{
+    pendingUpload = {bid: sel.value, customerId, onDone: ()=>{ renderCustomerDetailBody(customerId); refreshAfterFileChange(sel.value); }};
+    document.getElementById("fileInput").click();
+  });
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add("drag"); }));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove("drag"); }));
+  dz.addEventListener("drop", async e=>{
+    e.preventDefault(); e.stopPropagation();
+    if(e.dataTransfer.files.length){
+      await uploadFilesForCustomerBranch(customerId, sel.value, e.dataTransfer.files);
+      renderCustomerDetailBody(customerId);
+      refreshAfterFileChange(sel.value);
+    }
+  });
+}
+
+const TABS = ["dashboard","business-map","customer-acquisition","service-delivery","revenue-billing","customer-support"];
+
+function renderCustomerDashboardShell(){
+  return `<header class="hero">
+    <span class="badge">Client Overview</span>
+    <h1>Customer Dashboard</h1>
+    <p>Every customer, tracked from Customer Acquisition through Service Delivery, Revenue &amp; Billing and Customer Support — with their documents in one place.</p>
+  </header>
+  <div class="section"><div id="customerDashboardBody"></div></div>`;
+}
 
 function renderAllPages(){
   const wrap = document.getElementById("pages");
   wrap.innerHTML = TABS.map(key=>`<div class="tabpage" id="page-${key}"><div class="container">
-    ${key==="business-map" ? renderBusinessMap() : renderFunctionalTab(key)}
+    ${key==="dashboard" ? renderCustomerDashboardShell() : key==="business-map" ? renderBusinessMap() : renderFunctionalTab(key)}
   </div></div>`).join("");
 
   // wire branch expand/collapse
@@ -949,8 +1176,13 @@ function initNav(){
   document.getElementById("customerSwitcherBtn").addEventListener("click", ()=>openCustomerModal());
   document.getElementById("modalOverlay").addEventListener("click", e=>{ if(e.target.id==="modalOverlay") closeModal(); });
   document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
-  document.getElementById("fileInput").addEventListener("change", e=>{
-    if(e.target.files.length && activeBranchForUpload) handleBranchFiles(activeBranchForUpload, e.target.files);
+  document.getElementById("fileInput").addEventListener("change", async e=>{
+    if(e.target.files.length && pendingUpload){
+      const {bid, customerId, onDone} = pendingUpload;
+      await uploadFilesForCustomerBranch(customerId, bid, e.target.files);
+      if(onDone) onDone();
+    }
+    pendingUpload = null;
     e.target.value = "";
   });
 }
@@ -971,7 +1203,8 @@ async function init(){
   renderAllPages();
   initNav();
   updateCustomerSwitcherUI();
-  switchTab("business-map");
+  renderCustomerDashboardBody("");
+  switchTab("dashboard");
 }
 
 document.addEventListener("DOMContentLoaded", init);
