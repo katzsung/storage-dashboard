@@ -105,6 +105,38 @@
   .dash-empty .btn{margin-top:12px;}
   .flex1{flex:1;min-width:0;}
 
+  /* Customer profile page */
+  .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--slate-500);font-size:13px;font-weight:700;
+    cursor:pointer;margin-bottom:18px;}
+  .back-link:hover{color:var(--purple);}
+  .profile-head{display:flex;align-items:center;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .profile-head .cust-avatar{width:56px;height:56px;font-size:19px;flex-shrink:0;}
+  .profile-head h2{margin:0 0 3px;font-size:22px;}
+  .profile-head .meta{font-size:13px;color:var(--slate-500);}
+  .profile-actions{display:flex;gap:8px;margin-left:auto;}
+
+  .journey-wrap{background:var(--card);border:1px solid var(--slate-200);border-radius:20px;box-shadow:var(--shadow);
+    padding:26px 24px;margin-bottom:24px;}
+  .journey-progress-label{font-size:12.5px;font-weight:700;color:var(--slate-500);margin-bottom:8px;}
+  .journey-progress-bar{width:100%;height:8px;background:var(--slate-100);border-radius:99px;overflow:hidden;margin-bottom:20px;}
+  .journey-progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:99px;transition:.3s;}
+  .journey-stepper{display:flex;align-items:flex-start;}
+  .journey-step{display:flex;flex-direction:column;align-items:center;text-align:center;width:120px;flex-shrink:0;}
+  .journey-dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;border:2px solid var(--slate-300);color:var(--slate-400);background:#fff;margin-bottom:8px;}
+  .journey-dot.progress{border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
+  .journey-dot.done{border-color:var(--green);color:#fff;background:var(--green);}
+  .journey-label{font-size:12.5px;font-weight:800;}
+  .journey-sub{font-size:11px;color:var(--slate-500);margin-top:1px;}
+  .journey-line{flex:1;height:2px;background:var(--slate-200);margin:19px 4px 0;}
+  .journey-line.done{background:var(--green);}
+
+  .stage-section{margin-bottom:20px;}
+  .stage-section-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .stage-section-head h4{margin:0;font-size:14px;}
+  .stage-branch-label{font-size:11.5px;font-weight:700;color:var(--slate-500);margin:10px 0 6px;padding-left:2px;}
+  .stage-empty{font-size:12px;color:var(--slate-500);padding:10px 0;}
+
   .container{max-width:1240px;margin:0 auto;padding:0 24px 90px;}
   .tabpage{display:none;}
   .tabpage.active{display:block;}
@@ -976,6 +1008,7 @@ function refreshAfterFileChange(bid){
   const card = bid ? document.querySelector(`.branch-card[data-branch="${bid}"]`) : null;
   if(card && card.classList.contains("open")) renderDocBody(bid);
   refreshDashboardBody();
+  refreshProfileIfOpen();
 }
 
 function refreshDashboardBody(){
@@ -1035,7 +1068,7 @@ function renderCustomerDashboardBody(searchText){
   if(currentDashboardSearch){ searchEl.focus(); searchEl.setSelectionRange(currentDashboardSearch.length, currentDashboardSearch.length); }
   const addBtn = document.getElementById("dashAddCustBtn"); if(addBtn) addBtn.addEventListener("click", ()=>openCustomerModal());
   const addBtnEmpty = document.getElementById("dashAddCustBtnEmpty"); if(addBtnEmpty) addBtnEmpty.addEventListener("click", ()=>openCustomerModal());
-  container.querySelectorAll("[data-open-customer]").forEach(el=>el.addEventListener("click", ()=>openCustomerDetailModal(el.dataset.openCustomer)));
+  container.querySelectorAll("[data-open-customer]").forEach(el=>el.addEventListener("click", ()=>openCustomerProfilePage(el.dataset.openCustomer)));
 }
 
 function openCustomerDetailModal(customerId){
@@ -1131,6 +1164,152 @@ function renderCustomerDetailBody(customerId){
   });
 }
 
+/* ============================== Customer Profile (full page) ============================== */
+let currentProfileCustomerId = null;
+
+function stageStatus(touched, total){ return touched===0 ? "pending" : touched===total ? "done" : "progress"; }
+
+function renderJourneyStepper(customerId){
+  const stats = customerStageStats(customerId);
+  const totalTouched = stats.reduce((s,x)=>s+x.touched,0);
+  const totalAll = stats.reduce((s,x)=>s+x.total,0);
+  const pct = totalAll ? Math.round((totalTouched/totalAll)*100) : 0;
+  return `<div class="journey-wrap">
+    <div class="journey-progress-label">${totalTouched} of ${totalAll} services engaged across the full customer journey (${pct}%)</div>
+    <div class="journey-progress-bar"><div class="journey-progress-fill" style="width:${pct}%"></div></div>
+    <div class="journey-stepper">
+      ${stats.map((s,i)=>{
+        const status = stageStatus(s.touched, s.total);
+        const dot = status==="done" ? "✓" : (i+1);
+        return `<div class="journey-step">
+            <div class="journey-dot ${status}">${dot}</div>
+            <div class="journey-label">${esc(s.label)}</div>
+            <div class="journey-sub">${s.touched}/${s.total} services${status==="done"?" · complete":status==="progress"?" · in progress":" · not started"}</div>
+          </div>` + (i<stats.length-1 ? `<div class="journey-line ${status==="done"?"done":""}"></div>` : "");
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+function refreshProfileIfOpen(){
+  const page = document.getElementById("page-customer-profile");
+  if(page && page.classList.contains("active") && currentProfileCustomerId) renderCustomerProfileBody(currentProfileCustomerId);
+}
+
+function openCustomerProfilePage(customerId){
+  if(!customerById(customerId)) return;
+  currentProfileCustomerId = customerId;
+  renderCustomerProfileBody(customerId);
+  switchTab("customer-profile");
+  document.querySelectorAll(".navtab[data-tab]").forEach(b=>b.classList.toggle("active", b.dataset.tab==="dashboard"));
+}
+
+function renderCustomerProfileBody(customerId){
+  const c = customerById(customerId);
+  const container = document.getElementById("customerProfileBody");
+  if(!c || !container) return;
+  const docs = customerFiles(customerId);
+  const totalBytes = docs.reduce((s,f)=>s+(f.size||0),0);
+  const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+
+  const stageSections = STAGE_META.map(s=>{
+    const branchIds = BRANCH_SECTIONS[s.key].items.map(it=>({id:branchId(s.key,it.slug), title:it.title}));
+    const stageDocs = docs.filter(f=>branchIds.some(b=>b.id===f.folderId));
+    const stat = customerStageStats(customerId).find(x=>x.key===s.key);
+    const status = stageStatus(stat.touched, stat.total);
+    const branchesWithDocs = branchIds.filter(b=>stageDocs.some(f=>f.folderId===b.id));
+    return `<div class="stage-section">
+      <div class="stage-section-head">
+        <span class="stage-chip ${status!=="pending"?"on":""}" style="--chip-color:${COLORS[s.color].c};--chip-bg:${COLORS[s.color].bg}">${esc(s.label)} ${stat.touched}/${stat.total}</span>
+      </div>
+      ${branchesWithDocs.length ? branchesWithDocs.map(b=>{
+        const bd = stageDocs.filter(f=>f.folderId===b.id);
+        return `<div class="stage-branch-label">${esc(b.title)} · ${bd.length} doc${bd.length===1?"":"s"}</div>
+          <div class="doc-list" style="margin-bottom:8px;">${bd.map(f=>`
+            <div class="doc-row">
+              <div class="doc-chip" style="background:var(--slate-200);color:var(--slate-700)">${esc(extOf(f.name))}</div>
+              <div class="flex1"><div class="doc-name">${esc(f.name)}</div><div class="doc-meta">${formatBytes(f.size)} · ${timeAgo(f.createdAt)}</div></div>
+              <div class="doc-actions">
+                <button class="mini-btn" data-dl-profile="${f.id}" title="Download">⬇</button>
+                <button class="mini-btn" data-del-profile="${f.id}" data-belongs="${f.folderId}" title="Delete">🗑</button>
+              </div>
+            </div>`).join("")}</div>`;
+      }).join("") : `<div class="stage-empty">No documents in this stage yet.</div>`}
+    </div>`;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="back-link" id="backToDash">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Dashboard
+    </div>
+    <div class="profile-head">
+      <div class="cust-avatar" style="background:${customerColor(customerId)}">${esc(initials)}</div>
+      <div>
+        <h2>${esc(c.name)}</h2>
+        <div class="meta">${esc(c.company||"No company")}${c.email?" · "+esc(c.email):""} · ${docs.length} document${docs.length===1?"":"s"} · ${formatBytes(totalBytes)}</div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-ghost" id="setActiveFromProfile">Set as active</button>
+        <button class="btn btn-danger" id="deleteCustFromProfile">Delete customer</button>
+      </div>
+    </div>
+
+    <div class="section-head"><span class="section-bar"></span><h2>Journey Summary</h2></div>
+    ${renderJourneyStepper(customerId)}
+
+    <div class="section-head"><span class="section-bar"></span><h2>Add a Document</h2></div>
+    <div class="panel" style="margin-bottom:24px;">
+      <select id="profileBranchSelect" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;margin-bottom:10px;">
+        ${STAGE_META.map(s=>`<optgroup label="${esc(s.label)}">${BRANCH_SECTIONS[s.key].items.map(it=>`<option value="${branchId(s.key,it.slug)}">${esc(it.title)}</option>`).join("")}</optgroup>`).join("")}
+      </select>
+      <div class="doc-dropzone" id="profileDropzone" style="margin-bottom:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Drag &amp; drop or click to upload to the selected service</span>
+      </div>
+    </div>
+
+    <div class="section-head"><span class="section-bar"></span><h2>Documents by Stage</h2></div>
+    <div class="panel">${stageSections}</div>
+  `;
+
+  document.getElementById("backToDash").addEventListener("click", ()=>{ currentProfileCustomerId = null; switchTab("dashboard"); });
+  document.getElementById("setActiveFromProfile").addEventListener("click", ()=>{ setActiveCustomer(customerId); toast(`${c.name} set as active customer`); });
+  document.getElementById("deleteCustFromProfile").addEventListener("click", async ()=>{
+    await deleteCustomerRecord(customerId);
+    currentProfileCustomerId = null;
+    switchTab("dashboard");
+  });
+  container.querySelectorAll("[data-dl-profile]").forEach(b=>b.addEventListener("click", ()=>downloadFile(b.dataset.dlProfile)));
+  container.querySelectorAll("[data-del-profile]").forEach(b=>b.addEventListener("click", async ()=>{
+    const f = files.find(x=>x.id===b.dataset.delProfile); if(!f) return;
+    if(!confirm(`Delete "${f.name}"? This can't be undone.`)) return;
+    await del("files", f.id);
+    files = files.filter(x=>x.id!==f.id);
+    logActivity(`Deleted "${f.name}"`, "var(--red)");
+    toast("Deleted");
+    renderCustomerProfileBody(customerId);
+    refreshAfterFileChange(f.folderId);
+  }));
+
+  const dz = document.getElementById("profileDropzone");
+  const sel = document.getElementById("profileBranchSelect");
+  dz.addEventListener("click", ()=>{
+    pendingUpload = {bid: sel.value, customerId, onDone: ()=>{ renderCustomerProfileBody(customerId); refreshAfterFileChange(sel.value); }};
+    document.getElementById("fileInput").click();
+  });
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add("drag"); }));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove("drag"); }));
+  dz.addEventListener("drop", async e=>{
+    e.preventDefault(); e.stopPropagation();
+    if(e.dataTransfer.files.length){
+      await uploadFilesForCustomerBranch(customerId, sel.value, e.dataTransfer.files);
+      renderCustomerProfileBody(customerId);
+      refreshAfterFileChange(sel.value);
+    }
+  });
+}
+
 const TABS = ["dashboard","business-map","customer-acquisition","service-delivery","revenue-billing","customer-support"];
 
 function renderCustomerDashboardShell(){
@@ -1146,7 +1325,7 @@ function renderAllPages(){
   const wrap = document.getElementById("pages");
   wrap.innerHTML = TABS.map(key=>`<div class="tabpage" id="page-${key}"><div class="container">
     ${key==="dashboard" ? renderCustomerDashboardShell() : key==="business-map" ? renderBusinessMap() : renderFunctionalTab(key)}
-  </div></div>`).join("");
+  </div></div>`).join("") + `<div class="tabpage" id="page-customer-profile"><div class="container" id="customerProfileBody"></div></div>`;
 
   // wire branch expand/collapse
   wrap.querySelectorAll("[data-toggle]").forEach(head=>{
@@ -1168,6 +1347,7 @@ function renderAllPages(){
 }
 
 function switchTab(key){
+  if(key!=="customer-profile") currentProfileCustomerId = null;
   document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));
   document.getElementById("page-"+key).classList.add("active");
   document.querySelectorAll(".navtab[data-tab]").forEach(b=>b.classList.toggle("active", b.dataset.tab===key));
