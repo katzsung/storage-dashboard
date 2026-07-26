@@ -138,6 +138,7 @@
   .viewer-badge{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--slate-500);
     background:var(--slate-100);padding:6px 12px;border-radius:20px;margin-right:4px;}
   body.is-admin .viewer-badge{display:none;}
+  body.is-admin .viewer-only{display:none !important;}
   body.is-admin #signInBtn{display:none;}
   .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--slate-50,#f8fafc),var(--slate-100));
     display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
@@ -185,9 +186,8 @@
 
 <div class="container">
   <header class="hero">
-    <span class="badge">Prospect Database</span>
     <h1>Pickleball Courts — Cebu</h1>
-    <p>Pickleball venues across Cebu — your outreach list of potential clients. Track who's been contacted, who's interested, and who's already on board.</p>
+    <p>A directory of pickleball venues across Cebu, with locations, rates, and booking links.</p>
   </header>
   <div class="section"><div id="pbBody"></div></div>
 </div>
@@ -475,7 +475,7 @@ function renderPbCard(c){
       <div class="pb-card-notes-label">Notes</div>
       <textarea class="pb-notes-textarea admin-editable" data-pbnotes="${c.id}" placeholder="Add internal notes about this venue..." ${IS_ADMIN?"":"readonly"}>${esc((pbLeads[c.id]&&pbLeads[c.id].notes)||"")}</textarea>
     </div>
-    <div class="pb-card-foot">
+    <div class="pb-card-foot admin-only">
       <select class="pb-status-select admin-editable" data-pbstatus="${c.id}" style="border-color:${meta.color};color:${meta.color};background:${meta.bg}" ${IS_ADMIN?"":"disabled"}>
         ${PB_STATUS_OPTIONS.map(o=>`<option value="${o.key}" ${o.key===st?"selected":""}>${esc(o.label)}</option>`).join("")}
       </select>
@@ -507,11 +507,15 @@ function renderPbBody(){
   const interestedCount = allBase.filter(c=>pbStatus(c.id)==="interested").length;
 
   container.innerHTML = `
-    <div class="stat-strip" style="margin-bottom:22px;">
+    <div class="stat-strip admin-only" style="margin-bottom:22px;">
       <div class="stat-card"><div class="stat-num">${totalVenues}</div><div class="stat-label">Total Venues</div></div>
       <div class="stat-card"><div class="stat-num">${areas.length}</div><div class="stat-label">Areas Covered</div></div>
       <div class="stat-card"><div class="stat-num">${contactedCount}</div><div class="stat-label">Outreach Started</div></div>
       <div class="stat-card"><div class="stat-num">${clientCount}</div><div class="stat-label">Clients</div></div>
+    </div>
+    <div class="stat-strip viewer-only" style="margin-bottom:22px;grid-template-columns:repeat(2,1fr);">
+      <div class="stat-card"><div class="stat-num">${totalVenues}</div><div class="stat-label">Total Venues</div></div>
+      <div class="stat-card"><div class="stat-num">${areas.length}</div><div class="stat-label">Areas Covered</div></div>
     </div>
     <div class="dash-toolbar">
       <div class="search-box">
@@ -527,11 +531,12 @@ function renderPbBody(){
         return `<button class="pb-chip ${pbAreaFilter===a?'active':''}" data-area="${esc(a)}">${esc(a)} (${n})</button>`;
       }).join("")}
     </div>
-    <div class="pb-chip-group" id="pbStatusChips" style="margin-bottom:18px;">
+    <div class="pb-chip-group admin-only" id="pbStatusChips" style="margin-bottom:18px;">
       <button class="pb-chip ${pbFilterStatus==='all'?'active':''}" data-status="all">All Statuses</button>
       ${PB_STATUS_OPTIONS.map(o=>`<button class="pb-chip ${pbFilterStatus===o.key?'active':''}" data-status="${o.key}" style="${pbFilterStatus===o.key?`background:${o.bg};color:${o.color};border-color:${o.color};`:""}">${esc(o.label)}</button>`).join("")}
     </div>
-    <div class="pb-summary">${list.length} of ${totalVenues} venue${totalVenues===1?"":"s"} shown${interestedCount?` · ${interestedCount} marked Interested`:""}</div>
+    <div class="pb-summary admin-only">${list.length} of ${totalVenues} venue${totalVenues===1?"":"s"} shown${interestedCount?` · ${interestedCount} marked Interested`:""}</div>
+    <div class="pb-summary viewer-only">${list.length} of ${totalVenues} venue${totalVenues===1?"":"s"} shown</div>
     <div class="pb-list">
       ${list.length ? list.map(c=>renderPbCard(c)).join("") : `<div class="dash-empty">No venues match your filters.</div>`}
     </div>
