@@ -2705,7 +2705,7 @@ function renderPbBody(){
     if(pbFilterStatus!=="all" && pbStatus(c.id)!==pbFilterStatus) return false;
     if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area} ${(pbLeads[c.id]&&pbLeads[c.id].notes)||""}`.toLowerCase().includes(q))) return false;
     return true;
-  });
+  }).sort((a,b)=>a.name.localeCompare(b.name, undefined, {sensitivity:"base"}));
 
   const totalVenues = PICKLEBALL_COURTS.length;
   const contactedCount = PICKLEBALL_COURTS.filter(c=>pbStatus(c.id)!=="none").length;
