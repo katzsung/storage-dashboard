@@ -1732,7 +1732,18 @@ function openDB(){
       if(!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", {keyPath:"key"});
       if(!d.objectStoreNames.contains("pbLeads")) d.createObjectStore("pbLeads", {keyPath:"id"});
     };
-    req.onsuccess = e=>resolve(e.target.result);
+    // If another open tab is holding an older DB connection, this upgrade will stall.
+    // Surface it instead of hanging silently, and ask that tab to release the lock.
+    req.onblocked = ()=>{
+      console.warn("IndexedDB upgrade blocked — another tab has this dashboard open on an older version.");
+    };
+    req.onsuccess = e=>{
+      const conn = e.target.result;
+      // Let this connection step aside if a newer version needs to open elsewhere,
+      // so multiple open tabs never deadlock each other.
+      conn.onversionchange = ()=>{ conn.close(); location.reload(); };
+      resolve(conn);
+    };
     req.onerror = e=>reject(e.target.error);
   });
 }
