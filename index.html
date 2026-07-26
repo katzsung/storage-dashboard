@@ -1771,6 +1771,18 @@ async function setPbNotes(courtId, notes){
   await put("pbLeads", rec);
   pbLeads[courtId] = rec;
 }
+function pbCourtData(courtId){
+  const base = PICKLEBALL_COURTS.find(c=>c.id===courtId);
+  if(!base) return null;
+  const lead = pbLeads[courtId];
+  return (lead && lead.overrides) ? {...base, ...lead.overrides} : base;
+}
+async function setPbOverrides(courtId, overrides){
+  const existing = pbLeads[courtId] || {id:courtId, status:"none", notes:""};
+  const rec = {...existing, id:courtId, overrides:{...(existing.overrides||{}), ...overrides}, updatedAt:Date.now()};
+  await put("pbLeads", rec);
+  pbLeads[courtId] = rec;
+}
 const CUSTOMER_COLORS = ["purple","blue","green","orange","teal","red"];
 function customerColor(id){ if(!id) return "var(--slate-500)"; let h=0; for(let i=0;i<id.length;i++) h=(h*31+id.charCodeAt(i))>>>0; return COLORS[CUSTOMER_COLORS[h%CUSTOMER_COLORS.length]].c; }
 function customerById(id){ return customers.find(c=>c.id===id); }
@@ -2481,6 +2493,59 @@ function openEditNotesModal(customerId, onSaved){
   };
 }
 
+function openEditPbModal(courtId, onSaved){
+  const c = pbCourtData(courtId); if(!c) return;
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "edit-pb";
+  box.style.width = "460px";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Edit Venue</h3>
+    <div class="cust-form" style="margin-top:0;padding-top:0;border-top:none;">
+      <div class="cust-form-label" style="margin-top:0;">${esc(c.area)}</div>
+      <input type="text" id="editPbName" placeholder="Venue name *" value="${esc(c.name)}">
+      <div class="cust-form-row">
+        <input type="text" id="editPbType" placeholder="Court type (Outdoor/Indoor/Covered)" value="${esc(c.type||"")}">
+        <input type="text" id="editPbCourts" placeholder="# of courts" value="${esc(c.courts||"")}">
+      </div>
+      <input type="text" id="editPbLocation" placeholder="Location" value="${esc(c.location||"")}">
+      <input type="text" id="editPbBarangay" placeholder="Barangay" value="${esc(c.barangay||"")}">
+      <input type="text" id="editPbRates" placeholder="Rates" value="${esc(c.rates||"")}">
+      <input type="text" id="editPbContact" placeholder="Contact" value="${esc(c.contact||"")}">
+      <input type="text" id="editPbBooking" placeholder="Booking link / info" value="${esc(c.booking||"")}">
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" id="editPbCancel">Cancel</button>
+      <button class="btn btn-primary" id="editPbSave">Save changes</button>
+    </div>
+  `;
+  overlay.classList.add("show");
+  const nameEl = document.getElementById("editPbName");
+  nameEl.focus();
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("editPbCancel").onclick = closeModal;
+  const save = async ()=>{
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    await setPbOverrides(courtId, {
+      name,
+      type: document.getElementById("editPbType").value.trim(),
+      courts: document.getElementById("editPbCourts").value.trim(),
+      location: document.getElementById("editPbLocation").value.trim(),
+      barangay: document.getElementById("editPbBarangay").value.trim(),
+      rates: document.getElementById("editPbRates").value.trim(),
+      contact: document.getElementById("editPbContact").value.trim(),
+      booking: document.getElementById("editPbBooking").value.trim()
+    });
+    toast("Venue updated");
+    closeModal();
+    if(onSaved) onSaved();
+  };
+  document.getElementById("editPbSave").onclick = save;
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("keydown", e=>{ if(e.key==="Enter") save(); }));
+}
+
 /* ============================== Tabs / navigation ============================== */
 /* ============================== Customer Dashboard (main view) ============================== */
 let currentDashboardSearch = "";
@@ -2600,6 +2665,7 @@ function renderPbCard(c){
         <div class="pb-card-area">${esc(c.area)}${c.barangay?" · Brgy. "+esc(c.barangay):""}</div>
       </div>
       <span class="pb-type-tag" style="background:${tc.bg};color:${tc.c}">${esc(c.type||"—")}</span>
+      <button class="mini-btn" data-editpb="${c.id}" title="Edit venue">✎</button>
     </div>
     <div class="pb-card-body">
       <div class="pb-card-row"><span class="pb-card-ico">📍</span><span>${esc(c.location||"—")}</span></div>
@@ -2625,7 +2691,7 @@ function renderPbBody(){
   if(!container) return;
   const q = pbSearch.toLowerCase();
 
-  const list = PICKLEBALL_COURTS.filter(c=>{
+  const list = PICKLEBALL_COURTS.map(base=>pbCourtData(base.id)).filter(c=>{
     if(pbAreaFilter!=="all" && c.area!==pbAreaFilter) return false;
     if(pbFilterStatus!=="all" && pbStatus(c.id)!==pbFilterStatus) return false;
     if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area}`.toLowerCase().includes(q))) return false;
@@ -2675,11 +2741,14 @@ function renderPbBody(){
   container.querySelectorAll("[data-status]").forEach(btn=>btn.addEventListener("click", ()=>{ pbFilterStatus = btn.dataset.status; renderPbBody(); }));
   container.querySelectorAll("[data-pbstatus]").forEach(sel=>sel.addEventListener("change", async e=>{
     const courtId = sel.dataset.pbstatus;
-    const court = PICKLEBALL_COURTS.find(c=>c.id===courtId);
+    const court = pbCourtData(courtId);
     await setPbStatus(courtId, e.target.value);
     const meta = pbStatusMeta(e.target.value);
     sel.style.borderColor = meta.color; sel.style.color = meta.color; sel.style.background = meta.bg;
     toast(court ? `${court.name} marked "${meta.label}"` : "Status updated");
+  }));
+  container.querySelectorAll("[data-editpb]").forEach(btn=>btn.addEventListener("click", ()=>{
+    openEditPbModal(btn.dataset.editpb, refreshPbBody);
   }));
 }
 
