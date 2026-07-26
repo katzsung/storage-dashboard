@@ -471,7 +471,7 @@ function renderPbCard(c){
       <div class="pb-card-row"><span class="pb-card-ico">📱</span>${contactHtml}</div>
       ${bookingHtml}
     </div>
-    <div class="pb-card-notes">
+    <div class="pb-card-notes admin-only">
       <div class="pb-card-notes-label">Notes</div>
       <textarea class="pb-notes-textarea admin-editable" data-pbnotes="${c.id}" placeholder="Add internal notes about this venue..." ${IS_ADMIN?"":"readonly"}>${esc((pbLeads[c.id]&&pbLeads[c.id].notes)||"")}</textarea>
     </div>
@@ -497,7 +497,8 @@ function renderPbBody(){
   const list = allBase.map(base=>pbCourtData(base.id)).filter(c=>{
     if(pbAreaFilter!=="all" && c.area!==pbAreaFilter) return false;
     if(pbFilterStatus!=="all" && pbStatus(c.id)!==pbFilterStatus) return false;
-    if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area} ${(pbLeads[c.id]&&pbLeads[c.id].notes)||""}`.toLowerCase().includes(q))) return false;
+    const searchNotes = IS_ADMIN ? ((pbLeads[c.id]&&pbLeads[c.id].notes)||"") : "";
+    if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area} ${searchNotes}`.toLowerCase().includes(q))) return false;
     return true;
   }).sort((a,b)=>a.name.localeCompare(b.name, undefined, {sensitivity:"base"}));
 
