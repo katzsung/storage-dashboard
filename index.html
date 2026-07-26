@@ -2781,6 +2781,11 @@ function renderPbCard(c){
         ? `<div class="pb-card-row"><span class="pb-card-ico">🔗</span><a href="${esc(c.bookingUrl)}" target="_blank" rel="noopener">${esc(c.booking)}</a></div>`
         : `<div class="pb-card-row"><span class="pb-card-ico">🔗</span><span>${esc(c.booking)}</span></div>`)
     : "";
+  const mapsQuery = [c.location, c.barangay, c.area, "Cebu"].filter(Boolean).join(", ");
+  const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapsQuery);
+  const locationHtml = c.location
+    ? `<a href="${esc(mapsUrl)}" target="_blank" rel="noopener">${esc(c.location)}</a>`
+    : `<span>—</span>`;
   return `<div class="pb-card">
     <div class="pb-card-head">
       <div class="flex1">
@@ -2792,7 +2797,7 @@ function renderPbCard(c){
       ${isCustom?`<button class="mini-btn" data-delpb="${c.id}" title="Delete venue">🗑</button>`:""}
     </div>
     <div class="pb-card-body">
-      <div class="pb-card-row"><span class="pb-card-ico">📍</span><span>${esc(c.location||"—")}</span></div>
+      <div class="pb-card-row"><span class="pb-card-ico">📍</span>${locationHtml}</div>
       <div class="pb-card-row"><span class="pb-card-ico">🏟</span><span>${esc(c.courts||"—")} court(s)</span></div>
       <div class="pb-card-row"><span class="pb-card-ico">💵</span><span>${esc(c.rates||"—")}</span></div>
       <div class="pb-card-row"><span class="pb-card-ico">📱</span>${contactHtml}</div>
