@@ -75,8 +75,8 @@
   .cust-info .cmeta{font-size:11px;color:var(--slate-500);}
   .cust-actions{display:flex;gap:4px;}
   .cust-form{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--slate-200);}
-  .cust-form input, .cust-form textarea{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;font-family:inherit;}
-  .cust-form input:focus, .cust-form textarea:focus{border-color:var(--purple);}
+  .cust-form input, .cust-form select, .cust-form textarea{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;font-family:inherit;background:#fff;width:100%;box-sizing:border-box;}
+  .cust-form input:focus, .cust-form select:focus, .cust-form textarea:focus{border-color:var(--purple);}
   .cust-form textarea{resize:vertical;min-height:70px;line-height:1.5;}
   .cust-form-row{display:flex;gap:8px;}
   .cust-form-row input{flex:1;min-width:0;}
@@ -2596,8 +2596,11 @@ function openAddPbModal(onSaved){
     <button class="modal-close" id="modalCloseBtn">✕</button>
     <h3>Add Venue</h3>
     <div class="cust-form" style="margin-top:0;padding-top:0;border-top:none;">
-      <input type="text" id="addPbArea" placeholder="Area (e.g. Talisay City) *" list="pbAreaOptions">
-      <datalist id="pbAreaOptions">${pbAreas().map(a=>`<option value="${esc(a)}">`).join("")}</datalist>
+      <select id="addPbAreaSelect">
+        ${pbAreas().map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join("")}
+        <option value="__new__">+ Add new area…</option>
+      </select>
+      <input type="text" id="addPbAreaNew" placeholder="New area name *" style="display:none;">
       <input type="text" id="addPbName" placeholder="Venue name *">
       <div class="cust-form-row">
         <input type="text" id="addPbType" placeholder="Court type (Outdoor/Indoor/Covered)">
@@ -2617,15 +2620,25 @@ function openAddPbModal(onSaved){
     </div>
   `;
   overlay.classList.add("show");
-  const areaEl = document.getElementById("addPbArea");
+  const areaSelectEl = document.getElementById("addPbAreaSelect");
+  const areaNewEl = document.getElementById("addPbAreaNew");
   const nameEl = document.getElementById("addPbName");
-  areaEl.focus();
+  areaSelectEl.focus();
+  const useNewArea = ()=>{
+    areaSelectEl.style.display = "none";
+    areaNewEl.style.display = "block";
+    areaNewEl.focus();
+  };
+  areaSelectEl.addEventListener("change", ()=>{
+    if(areaSelectEl.value === "__new__") useNewArea();
+  });
   document.getElementById("modalCloseBtn").onclick = closeModal;
   document.getElementById("addPbCancel").onclick = closeModal;
   const save = async ()=>{
-    const area = areaEl.value.trim();
+    const usingNew = areaNewEl.style.display !== "none";
+    const area = usingNew ? areaNewEl.value.trim() : areaSelectEl.value.trim();
     const name = nameEl.value.trim();
-    if(!area){ areaEl.focus(); return; }
+    if(!area){ (usingNew?areaNewEl:areaSelectEl).focus(); return; }
     if(!name){ nameEl.focus(); return; }
     const rec = await addPbCourt({
       area, name,
