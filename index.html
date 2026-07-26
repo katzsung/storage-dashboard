@@ -138,6 +138,11 @@
   .pb-card-body{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
   .pb-card-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--slate-700);line-height:1.45;}
   .pb-card-ico{flex-shrink:0;}
+  .pb-card-notes{margin-bottom:12px;}
+  .pb-card-notes-label{font-size:10.5px;font-weight:800;color:var(--slate-500);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .pb-notes-textarea{width:100%;padding:8px 10px;border:1px solid var(--slate-200);border-radius:8px;font-size:12px;
+    font-family:inherit;outline:none;resize:vertical;min-height:48px;line-height:1.45;color:var(--slate-700);}
+  .pb-notes-textarea:focus{border-color:var(--purple);}
   .pb-card-foot{border-top:1px solid var(--slate-200);padding-top:12px;}
   .pb-status-select{width:100%;padding:8px 10px;border:1.5px solid var(--slate-200);border-radius:9px;font-size:12px;
     font-weight:700;outline:none;cursor:pointer;}
@@ -2674,6 +2679,10 @@ function renderPbCard(c){
       <div class="pb-card-row"><span class="pb-card-ico">📱</span><span>${esc(c.contact||"—")}</span></div>
       ${c.booking?`<div class="pb-card-row"><span class="pb-card-ico">🔗</span><span>${esc(c.booking)}</span></div>`:""}
     </div>
+    <div class="pb-card-notes">
+      <div class="pb-card-notes-label">Notes</div>
+      <textarea class="pb-notes-textarea" data-pbnotes="${c.id}" placeholder="Add internal notes about this venue...">${esc((pbLeads[c.id]&&pbLeads[c.id].notes)||"")}</textarea>
+    </div>
     <div class="pb-card-foot">
       <select class="pb-status-select" data-pbstatus="${c.id}" style="border-color:${meta.color};color:${meta.color};background:${meta.bg}">
         ${PB_STATUS_OPTIONS.map(o=>`<option value="${o.key}" ${o.key===st?"selected":""}>${esc(o.label)}</option>`).join("")}
@@ -2694,7 +2703,7 @@ function renderPbBody(){
   const list = PICKLEBALL_COURTS.map(base=>pbCourtData(base.id)).filter(c=>{
     if(pbAreaFilter!=="all" && c.area!==pbAreaFilter) return false;
     if(pbFilterStatus!=="all" && pbStatus(c.id)!==pbFilterStatus) return false;
-    if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area}`.toLowerCase().includes(q))) return false;
+    if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area} ${(pbLeads[c.id]&&pbLeads[c.id].notes)||""}`.toLowerCase().includes(q))) return false;
     return true;
   });
 
@@ -2750,6 +2759,12 @@ function renderPbBody(){
   container.querySelectorAll("[data-editpb]").forEach(btn=>btn.addEventListener("click", ()=>{
     openEditPbModal(btn.dataset.editpb, refreshPbBody);
   }));
+  container.querySelectorAll("[data-pbnotes]").forEach(ta=>{
+    let debounceTimer;
+    const save = ()=>{ clearTimeout(debounceTimer); setPbNotes(ta.dataset.pbnotes, ta.value); };
+    ta.addEventListener("input", ()=>{ clearTimeout(debounceTimer); debounceTimer = setTimeout(save, 600); });
+    ta.addEventListener("blur", save);
+  });
 }
 
 function openCustomerDetailModal(customerId){
