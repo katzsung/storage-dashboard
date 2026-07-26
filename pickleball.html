@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pickleball Courts — Cebu | RallySight</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --purple:#7c3aed; --purple-light:#ede9fe;
+    --blue:#3b82f6; --blue-light:#dbeafe;
+    --green:#10b981; --green-light:#d1fae5;
+    --orange:#f59e0b; --orange-light:#fef3c7;
+    --teal:#06b6d4; --teal-light:#cffafe;
+    --red:#ef4444; --red-light:#fee2e2;
+    --slate-900:#0f172a; --slate-700:#334155; --slate-500:#64748b;
+    --slate-300:#cbd5e1; --slate-200:#e2e8f0; --slate-100:#f1f5f9;
+    --bg:#f8f9fc; --card:#ffffff;
+    --radius:16px;
+    --shadow:0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-lg:0 12px 28px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--slate-900);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;}
+  a{color:inherit;}
+  svg{display:block;}
+
+  /* Nav */
+  .topnav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--slate-200);}
+  .nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:6px;
+    padding:0 24px;overflow-x:auto;}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;letter-spacing:-.2px;
+    padding:14px 14px 14px 0;white-space:nowrap;}
+  .brand-dot{width:11px;height:11px;border-radius:50%;background:var(--purple);box-shadow:0 0 0 4px var(--purple-light);}
+  .brand-sub{font-weight:600;color:var(--slate-500);margin-left:6px;font-size:14px;}
+  .nav-spacer{flex:1;}
+  .storage-btn{border:none;background:var(--slate-100);color:var(--slate-700);width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:6px;text-decoration:none;}
+  .storage-btn:hover{background:var(--slate-200);}
+
+  .container{max-width:1240px;margin:0 auto;padding:0 24px 90px;}
+
+  .hero{max-width:900px;margin:0 auto;padding:44px 24px 6px;text-align:center;}
+  .badge{display:inline-block;background:var(--purple-light);color:var(--purple);font-weight:700;font-size:12.5px;
+    padding:6px 16px;border-radius:999px;margin-bottom:16px;}
+  .hero h1{font-size:34px;margin:0 0 10px;letter-spacing:-1px;font-weight:800;}
+  .hero p{color:var(--slate-500);font-size:15px;max-width:600px;margin:0 auto;line-height:1.55;}
+  .section{margin:40px 0;}
+  .flex1{flex:1;min-width:0;}
+
+  /* Dashboard toolbar / search */
+  .dash-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .search-box{position:relative;}
+  .search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;
+    color:var(--slate-500);pointer-events:none;}
+  .search-box input{padding:9px 14px 9px 34px;border:1px solid var(--slate-200);border-radius:10px;font-size:13.5px;
+    outline:none;transition:.15s;background:var(--slate-100);}
+  .search-box input:focus{background:#fff;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-light);}
+  .dash-toolbar .search-box{flex:1;min-width:200px;}
+  .dash-toolbar .search-box input{width:100%;}
+  .dash-empty{padding:60px 20px;text-align:center;color:var(--slate-500);}
+
+  /* Storage summary strip */
+  .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:8px;}
+  .stat-card{background:var(--card);border:1px solid var(--slate-200);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+  .stat-num{font-size:21px;font-weight:800;letter-spacing:-.4px;}
+  .stat-label{color:var(--slate-500);font-size:12px;font-weight:600;margin-top:2px;}
+
+  /* Pickleball Courts cards */
+  .pb-chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+  .pb-chip{border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);font-size:11.5px;font-weight:700;
+    padding:6px 12px;border-radius:999px;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .pb-chip:hover{border-color:var(--purple);color:var(--purple);}
+  .pb-chip.active{background:var(--purple);color:#fff;border-color:var(--purple);}
+  .pb-summary{font-size:12px;color:var(--slate-500);font-weight:600;margin-bottom:12px;}
+  .pb-list{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .pb-card{border:1px solid var(--slate-200);border-radius:16px;background:#fff;padding:16px;box-shadow:var(--shadow);}
+  .pb-card-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .pb-card-name{font-size:14px;font-weight:800;line-height:1.3;}
+  .pb-card-area{font-size:11.5px;color:var(--slate-500);font-weight:600;margin-top:2px;}
+  .pb-type-tag{font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;flex-shrink:0;}
+  .pb-card-body{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .pb-card-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--slate-700);line-height:1.45;}
+  .pb-card-row a{color:var(--purple);text-decoration:none;font-weight:600;}
+  .pb-card-row a:hover{text-decoration:underline;}
+  .pb-card-ico{flex-shrink:0;}
+  .pb-card-notes{margin-bottom:12px;}
+  .pb-card-notes-label{font-size:10.5px;font-weight:800;color:var(--slate-500);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .pb-notes-textarea{width:100%;padding:8px 10px;border:1px solid var(--slate-200);border-radius:8px;font-size:12px;
+    font-family:inherit;outline:none;resize:vertical;min-height:48px;line-height:1.45;color:var(--slate-700);}
+  .pb-notes-textarea:focus{border-color:var(--purple);}
+  .pb-card-foot{border-top:1px solid var(--slate-200);padding-top:12px;}
+  .pb-status-select{width:100%;padding:8px 10px;border:1.5px solid var(--slate-200);border-radius:9px;font-size:12px;
+    font-weight:700;outline:none;cursor:pointer;}
+  @media(max-width:900px){ .pb-list{grid-template-columns:1fr;} .stat-strip{grid-template-columns:repeat(2,1fr);} }
+
+  .mini-btn{width:26px;height:26px;border-radius:7px;border:none;background:var(--slate-100);color:var(--slate-500);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .mini-btn:hover{background:var(--slate-200);color:var(--slate-900);}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;
+    z-index:100;opacity:0;pointer-events:none;transition:.15s;padding:20px;}
+  .modal-overlay.show{opacity:1;pointer-events:auto;}
+  .modal-box{background:#fff;border-radius:16px;padding:22px;width:420px;max-width:92vw;box-shadow:var(--shadow-lg);
+    transform:translateY(10px);transition:.15s;max-height:86vh;overflow:auto;position:relative;}
+  .modal-overlay.show .modal-box{transform:translateY(0);}
+  .modal-box h3{margin:0 0 14px;font-size:16px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;}
+  .btn{border:none;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--purple);color:#fff;}
+  .btn-primary:hover{background:#6d28d9;}
+  .btn-ghost{background:var(--slate-100);color:var(--slate-700);}
+  .btn-ghost:hover{background:var(--slate-200);}
+  .btn-danger{background:var(--red-light);color:#b91c1c;}
+  .btn-danger:hover{background:#fecaca;}
+  .modal-close{position:absolute;top:16px;right:16px;background:var(--slate-100);border:none;width:28px;height:28px;
+    border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);}
+
+  .cust-form{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--slate-200);}
+  .cust-form input, .cust-form select, .cust-form textarea{padding:9px 12px;border:1px solid var(--slate-200);border-radius:9px;font-size:13px;outline:none;font-family:inherit;background:#fff;width:100%;box-sizing:border-box;}
+  .cust-form input:focus, .cust-form select:focus, .cust-form textarea:focus{border-color:var(--purple);}
+  .cust-form-row{display:flex;gap:8px;}
+  .cust-form-row input{flex:1;min-width:0;}
+
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);
+    color:#fff;padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;transition:.2s;z-index:200;pointer-events:none;}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* Admin sign-in (viewer mode is the default; signing in unlocks edit controls) */
+  #loginScreen{display:none;}
+  #loginScreen.show{display:flex;}
+  body:not(.is-admin) .admin-only{display:none !important;}
+  body:not(.is-admin) .admin-editable{pointer-events:none;opacity:.7;cursor:default;}
+  .viewer-badge{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--slate-500);
+    background:var(--slate-100);padding:6px 12px;border-radius:20px;margin-right:4px;}
+  body.is-admin .viewer-badge{display:none;}
+  body.is-admin #signInBtn{display:none;}
+  .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--slate-50,#f8fafc),var(--slate-100));
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+  .login-card{position:relative;background:#fff;border:1px solid var(--slate-200);border-radius:20px;padding:44px 36px;
+    max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow-lg);}
+  .login-brand{display:flex;align-items:center;justify-content:center;gap:9px;font-weight:800;font-size:16px;
+    color:var(--slate-900);margin-bottom:22px;}
+  .login-card h1{font-size:19px;margin:0 0 8px;color:var(--slate-900);}
+  .login-card p{font-size:13px;color:var(--slate-500);margin:0 0 26px;line-height:1.5;}
+  .google-btn-wrap{display:flex;justify-content:center;min-height:44px;}
+  .login-error{margin-top:16px;font-size:12.5px;color:var(--red);background:var(--red-light);
+    border-radius:10px;padding:10px 12px;text-align:left;}
+  .login-loading{font-size:12px;color:var(--slate-500);}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <button class="modal-close" id="loginCloseBtn">✕</button>
+    <div class="login-brand"><span class="brand-dot"></span>RallySight</div>
+    <h1>Admin sign-in</h1>
+    <p>Sign in with your Google account to edit this list. Everyone else can view it read-only.</p>
+    <div id="googleBtnContainer" class="google-btn-wrap"><span class="login-loading">Loading sign-in…</span></div>
+    <div id="loginError" class="login-error" style="display:none;"></div>
+  </div>
+</div>
+
+<nav class="topnav">
+  <div class="nav-inner" id="navInner">
+    <div class="brand"><span class="brand-dot"></span>RallySight<span class="brand-sub">/ Pickleball Courts</span></div>
+    <div class="nav-spacer"></div>
+    <span class="viewer-badge" id="viewerBadge">👁 View only</span>
+    <a class="storage-btn admin-only" href="./" title="Open full dashboard">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <button class="storage-btn" id="signInBtn" title="Sign in as admin">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    </button>
+    <button class="storage-btn admin-only" id="signOutBtn" title="Sign out">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="hero">
+    <span class="badge">Prospect Database</span>
+    <h1>Pickleball Courts — Cebu</h1>
+    <p>Pickleball venues across Cebu — your outreach list of potential clients. Track who's been contacted, who's interested, and who's already on board.</p>
+  </header>
+  <div class="section"><div id="pbBody"></div></div>
+</div>
+
+<div id="toast"></div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox" style="position:relative;"></div></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================== Shared colors / status options ============================== */
+const COLORS = {
+  purple:{c:"var(--purple)", bg:"var(--purple-light)"},
+  blue:{c:"var(--blue)", bg:"var(--blue-light)"},
+  green:{c:"var(--green)", bg:"var(--green-light)"},
+  orange:{c:"var(--orange)", bg:"var(--orange-light)"},
+  teal:{c:"var(--teal)", bg:"var(--teal-light)"},
+  red:{c:"var(--red)", bg:"var(--red-light)"}
+};
+
+const PB_STATUS_OPTIONS = [
+  {key:"none", label:"Not Contacted", color:"var(--slate-500)", bg:"var(--slate-100)"},
+  {key:"contacted", label:"Contacted", color:"var(--blue)", bg:"var(--blue-light)"},
+  {key:"interested", label:"Interested", color:"var(--orange)", bg:"var(--orange-light)"},
+  {key:"client", label:"Client", color:"var(--green)", bg:"var(--green-light)"},
+  {key:"not-interested", label:"Not Interested", color:"var(--red)", bg:"var(--red-light)"}
+];
+
+/* ============================== IndexedDB (same DB as the main dashboard, same origin) ============================== */
+const DB_NAME = "rallysight_business_map_db_v1";
+const DB_VERSION = 4;
+let db;
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e=>{
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains("files")){
+        const fs = d.createObjectStore("files", {keyPath:"id"});
+        fs.createIndex("folderId","folderId");
+        fs.createIndex("customerId","customerId");
+      }
+      if(!d.objectStoreNames.contains("activity")) d.createObjectStore("activity", {keyPath:"id"});
+      if(!d.objectStoreNames.contains("customers")) d.createObjectStore("customers", {keyPath:"id"});
+      if(!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", {keyPath:"key"});
+      if(!d.objectStoreNames.contains("pbLeads")) d.createObjectStore("pbLeads", {keyPath:"id"});
+      if(!d.objectStoreNames.contains("pbCustom")) d.createObjectStore("pbCustom", {keyPath:"id"});
+    };
+    req.onblocked = ()=>{
+      console.warn("IndexedDB upgrade blocked — another tab has this dashboard open on an older version.");
+    };
+    req.onsuccess = e=>{
+      const conn = e.target.result;
+      conn.onversionchange = ()=>{ conn.close(); location.reload(); };
+      resolve(conn);
+    };
+    req.onerror = e=>reject(e.target.error);
+  });
+}
+function tx(store,mode){ return db.transaction(store,mode).objectStore(store); }
+function put(store,obj){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").put(obj); r.onsuccess=()=>res(obj); r.onerror=()=>rej(r.error); }); }
+function del(store,id){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
+function getAll(store){ return new Promise((res,rej)=>{ const r=tx(store,"readonly").getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const uid = ()=> (crypto.randomUUID ? crypto.randomUUID() : "id-"+Date.now()+"-"+Math.random().toString(16).slice(2));
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("show"); }
+
+/* ============================== Pickleball Courts data ============================== */
+const PICKLEBALL_COURTS = [
+  {id:'pb1', area:'Talisay City', name:'Talisay Paddle Court', type:'Outdoor', courts:'3', location:'Beside Talisay City Hall, Brgy. Lawaan II, Talisay City', barangay:'Lawaan II', rates:'FREE (6am-10pm)', contact:'WALK-IN', contactUrl:'', booking:'', bookingUrl:''},
+  {id:'pb2', area:'Talisay City', name:'Adventist Academy Cebu (AAC Pickle)', type:'Outdoor', courts:'4 - outdoor / 2 - indoor', location:'Natalio Bacalso Avenue, Brgy. Bulacao, Talisay City', barangay:'Bulacao', rates:'₱120/ OPEN PLAY (5pm-9:30pm)', contact:'AAC Pickle Reclub', contactUrl:'https://reclub.co/clubs/@aac-pickle', booking:'', bookingUrl:''},
+  {id:'pb3', area:'Talisay City', name:'Aulga Sports Gym (Aulga Night Dinkers)', type:'Indoor', courts:'1-3', location:'Aulga Sports Gym, Brgy. Lawaan II, Talisay City', barangay:'Lawaan II', rates:'₱125/ OPEN PLAY (8pm-1am)', contact:'Aulga Night Dinkers Messenger', contactUrl:'https://www.facebook.com/messages/t/984051947540480', booking:'', bookingUrl:''},
+  {id:'pb4', area:'Talisay City', name:'Light House Pickleball Court', type:'Outdoor', courts:'1', location:'Sitio Caduldulan, Brgy. Lawaan III, Talisay City', barangay:'Lawaan III', rates:'₱180/hr (6am-6pm); ₱200/hr (6pm-11pm)', contact:'Light House Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61590458187921', booking:'', bookingUrl:''},
+  {id:'pb5', area:'Talisay City', name:'YBPickle', type:'Outdoor', courts:'1', location:'Sitio Candaya, Brgy. Mohon, Talisay City (Luyo St. Peter)', barangay:'Mohon', rates:'₱150/hr (6am-6pm); ₱200/hr (6pm-6am)', contact:'YBPickle', contactUrl:'https://www.facebook.com/profile.php?id=61565414223126', booking:'BOOK HERE', bookingUrl:'https://ybpickle.com/'},
+  {id:'pb6', area:'Talisay City', name:'Yard Behind Pickleball Court 2', type:'Outdoor', courts:'2', location:'Sitio Libo, Brgy. Mohon, Talisay City (Kapilya dpit Purok Caimito)', barangay:'Mohon', rates:'₱150/hr (6am-6pm); ₱200/hr (6pm-6am)', contact:'Yard Behind Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61587762749159', booking:'BOOK HERE', bookingUrl:'https://book.insta-courts.com/venues/yardbehindpickleballcourt'},
+  {id:'pb7', area:'Talisay City', name:'JB Pickleball Court', type:'Indoor', courts:'1', location:'C. Sedetanrio, Sitio San Antonio, Brgy. Linao, Talisay City (January Builders Gym)', barangay:'Linao', rates:'₱220/hr (6am-5pm); ₱300/hr (5pm-11pm)', contact:'JB Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61588576693971', booking:'', bookingUrl:''},
+  {id:'pb8', area:'Talisay City', name:'NICkleball Avenue', type:'Outdoor', courts:'2', location:'Sitio Ilang-ilang, Brgy. Lagtang, Talisay City', barangay:'Lagtang', rates:'₱250/hr (6am-5pm); ₱300/hr (6pm-12mn)', contact:'NICkleball Avenue', contactUrl:'https://www.facebook.com/profile.php?id=61572331186820', booking:'', bookingUrl:''},
+  {id:'pb9', area:'Talisay City', name:'Southscape (The Market Shed)', type:'Covered', courts:'2', location:'Southscape (Across Starmall/Jollibee), Brgy. Lawaan I, Talisay City, Cebu', barangay:'Lawaan I', rates:'₱300/hr (24/7)', contact:'Southscape', contactUrl:'https://www.facebook.com/southscapism', booking:'', bookingUrl:''},
+  {id:'pb10', area:'Talisay City', name:'DJ\'s Backyard Pickleball Court', type:'Outdoor', courts:'1', location:'Sacred Heart Village, Brgy. San Isidro, Talisay City, Cebu', barangay:'San Isidro', rates:'₱300/hr (9am-10pm)', contact:'DJ\'s Backyard Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61590332109962', booking:'BOOK HERE', bookingUrl:'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ10JEtly2ideyU_rS0EqJYKRl-Z_nluI0QFDfi3'},
+  {id:'pb11', area:'Talisay City', name:'Gentlepeace Residences', type:'Outdoor', courts:'1', location:'Gentlepeace Residences, Lower Mohon, Talisay City', barangay:'Mohon', rates:'₱300/hr (4pm-10pm)', contact:'Contact # 09458695651', contactUrl:'', booking:'', bookingUrl:''},
+  {id:'pb12', area:'Talisay City', name:'Topspin Pickleball Court', type:'Outdoor', courts:'1', location:'Dumlog Food Park, Ernesto Bascon Street, Dumlog, Talisay City, Cebu', barangay:'Dumlog', rates:'₱250/hr (12mn-10am); ₱300/hr (3pm-12mn)', contact:'Dumlog Food Park', contactUrl:'https://www.facebook.com/dumlogfoodpark', booking:'BOOK HERE', bookingUrl:'https://primebooker.teknosprint.com/embed/form/topspin-pickleball-court'},
+  {id:'pb13', area:'Talisay City', name:'Lucky Peak', type:'Outdoor', courts:'1', location:'Kishanta, Brgy. Lagtang, Talisay City', barangay:'Lagtang', rates:'₱250/hr (6am-4pm); ₱300/hr (4pm-2am)', contact:'Lucky Peak', contactUrl:'https://www.facebook.com/profile.php?id=61560196445101', booking:'', bookingUrl:''},
+  {id:'pb14', area:'Talisay City', name:'Pickleball Court at Breakpoint', type:'Outdoor', courts:'1', location:'Sta. Rita Ville, Brgy. Dumlog, Talisay, Cebu', barangay:'Dumlog', rates:'₱300/hr (10am-5pm); ₱350/hr (5pm-11pm)', contact:'Pickleball Court at Breakpoint', contactUrl:'https://www.facebook.com/profile.php?id=61590624984868', booking:'', bookingUrl:''},
+  {id:'pb15', area:'Talisay City', name:'Go Zone Sports Center', type:'Indoor', courts:'3', location:'Zone 3 Canizares Street, Brgy. Dumlog, Talisay City', barangay:'Dumlog', rates:'₱300/hr (10am-10pm) soft opening rates', contact:'Go Zone', contactUrl:'https://www.facebook.com/profile.php?id=61581586826995', booking:'BOOK HERE', bookingUrl:'https://playline.ph/venues/go-zone'},
+  {id:'pb16', area:'Talisay City', name:'Pkell Grounds', type:'Outdoor', courts:'1', location:'28 Galaxy St., Brgy. Tangke, Talisay City', barangay:'Tangke', rates:'₱310/hr (7am-5pm); ₱360/hr (5pm-7am)', contact:'Pkell Grounds', contactUrl:'https://www.facebook.com/PkellGrounds', booking:'BOOK HERE', bookingUrl:'https://pkellgrounds.com/'},
+  {id:'pb17', area:'Talisay City', name:'9.10.', type:'Covered', courts:'1', location:'Z3-214, San Isidro Village, Brgy. San Isidro, Talisay City', barangay:'San Isidro', rates:'₱350/hr (6am-12mn)', contact:'9.10 Leisure Hub', contactUrl:'https://www.facebook.com/910leisurehub', booking:'BOOK HERE', bookingUrl:'https://www.courtogo.com/venues/-910'},
+  {id:'pb18', area:'Talisay City', name:'Chibs N\' Dink', type:'Outdoor', courts:'1', location:'P. Labuca St., Brgy. Cansojong, Talisay City', barangay:'Cansojong', rates:'₱350/hr (6am-12mn)', contact:'Chibs N\' Dink', contactUrl:'https://www.facebook.com/profile.php?id=61591050509683', booking:'', bookingUrl:''},
+  {id:'pb19', area:'Talisay City', name:'Pick & Dink', type:'Outdoor', courts:'2', location:'Sitio 5B Tambis, Brgy. Pooc, Talisay City (at the back of Vicente Manreal Elem School)', barangay:'Pooc', rates:'₱350/hr (4pm-2am)', contact:'Pick & Dink', contactUrl:'https://www.facebook.com/profile.php?id=61590196214989', booking:'', bookingUrl:''},
+  {id:'pb20', area:'Talisay City', name:'South Agora Pickleball Court', type:'Outdoor', courts:'3', location:'South Agora, Brgy. San Isidro, Talisay City (Across Victoria\'s Halo-halo)', barangay:'San Isidro', rates:'₱400/hr (4pm-12mn)', contact:'South Agora Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61590642302637', booking:'', bookingUrl:''},
+  {id:'pb21', area:'Talisay City', name:'Dinkers Pickleball Hub', type:'Indoor', courts:'1', location:'Rabaya St., Kimba, Brgy. Cansojong, Talisay City', barangay:'Cansojong', rates:'₱400/hr (6am-12mn)', contact:'Dinkers Pickleball Hub', contactUrl:'https://www.facebook.com/profile.php?id=61588958512649', booking:'', bookingUrl:''},
+  {id:'pb22', area:'Talisay City', name:'Updraft Coffee', type:'Outdoor', courts:'1', location:'Perry\'s, Laray, Brgy. San Roque, Talisay City', barangay:'San Roque', rates:'₱400/hr (9pm-1am)', contact:'Updraft Coffee Instagram', contactUrl:'https://www.instagram.com/updraft_coffee', booking:'', bookingUrl:''},
+  {id:'pb23', area:'Talisay City', name:'The Courtside Cebu', type:'Indoor', courts:'4', location:'2F, Starmall, Brgy. Lawaan III, Talisay City', barangay:'Lawaan III', rates:'₱400/hr (10am-8pm)', contact:'The Courtside Cebu', contactUrl:'https://www.facebook.com/profile.php?id=61580521050375', booking:'BOOK HERE', bookingUrl:'https://www.thecourtsidecebu.com/dashboard'},
+  {id:'pb24', area:'Talisay City', name:'Antara', type:'Outdoor', courts:'1', location:'Antara, Brgy. Lawaan III, Talisay City', barangay:'Lawaan III', rates:'₱400/hr (6am-9pm)', contact:'Antara', contactUrl:'https://www.facebook.com/AntaraPHOfficial', booking:'', bookingUrl:''},
+  {id:'pb25', area:'Talisay City', name:'Dink and Rally', type:'Covered', courts:'1', location:'Mansueto Road, Brgy. Bulacao, Talisay City', barangay:'Bulacao', rates:'₱400/hr (6am-5pm); ₱450/hr (5pm-6am)', contact:'Dink and Rally', contactUrl:'https://www.facebook.com/dinkandrally.cebu', booking:'BOOK HERE', bookingUrl:'https://dinkandrally.club/'},
+  {id:'pb26', area:'Talisay City', name:'Pickle Social', type:'Indoor', courts:'2', location:'Pang Pang St. Brgy. Tabunok, Talisay City', barangay:'Tabunok', rates:'₱400/hr (24/7-Weekdays); ₱450/hr (24/7-Weekends)', contact:'Pickle Social', contactUrl:'https://www.facebook.com/profile.php?id=61589519277936', booking:'BOOK HERE', bookingUrl:'https://picklesocialcebu.site/'},
+  {id:'pb27', area:'Talisay City', name:'Dink City Cebu', type:'Indoor', courts:'4', location:'Laray, Brgy. San Roque, Talisay City', barangay:'San Roque', rates:'₱450/hr (8am-5pm); ₱550/hr (6pm-1am)', contact:'Dink City Cebu', contactUrl:'https://www.facebook.com/profile.php?id=61566062267655', booking:'BOOK HERE', bookingUrl:'https://dinkcity.ds.wteph.com/'},
+  {id:'pb28', area:'Talisay City', name:'RallyX', type:'Covered', courts:'3', location:'General Luna St., Brgy. Poblacion, Talisay City (Likod Sta. Theresa church)', barangay:'Poblacion', rates:'₱450/hr (6am-3pm); ₱500/hr (3pm-12mn)', contact:'RallyX', contactUrl:'https://www.facebook.com/profile.php?id=61566259407937', booking:'BOOK HERE', bookingUrl:'https://www.jahbookconnect.com/rallyx/login?invite=e4261659e0a5ee57772eb66d77d98e6d29e3da974e8ea1d21cb98102ab61b23f'},
+  {id:'pb29', area:'Talisay City', name:'Pickaboo a.k.a PickleFarm', type:'Indoor', courts:'3', location:'Zafra Compound (At the back of Gaisano), Brgy. Tabunok, Talisay City', barangay:'Tabunok', rates:'₱400/hr (3am-5pm); ₱500/hr (5pm-3am)', contact:'Pickaboo', contactUrl:'https://www.facebook.com/pickaboocebu', booking:'BOOK HERE', bookingUrl:'https://pickaboocebu.com/'},
+  {id:'pb30', area:'Minglanilla', name:'Belmont Village Pickleball Court', type:'Outdoor', courts:'3', location:'Belmont Village, Brgy. Linao-Lipata, Minglanilla, Cebu', barangay:'Linao-Lipata', rates:'₱150/hr (day rate); ₱750/hr for 3 courts (night rate)', contact:'Belmont Village Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61586366858019', booking:'', bookingUrl:''},
+  {id:'pb31', area:'Minglanilla', name:'Topsouth Pickleball (Rooftop)', type:'Covered', courts:'1', location:'LABSCOR Commercial Bldg, Brgy. Tunghaan, Minglanilla, Cebu', barangay:'Tunghaan', rates:'₱190/hr (6am-4pm); ₱240/hr (5pm-4am)', contact:'Topsouth Pickleball', contactUrl:'https://www.facebook.com/profile.php?id=61586366858019', booking:'BOOK HERE', bookingUrl:'https://gopickle.net/courts/topsouth-pickleball-court-rooftop-court'},
+  {id:'pb32', area:'Minglanilla', name:'Jacob\'s Pickleball Open Court', type:'Outdoor', courts:'6', location:'Jacob\'s Commercial Building, Brgy. Tungkop, Minglanilla, Cebu', barangay:'Tungkop', rates:'₱250/hr (24/7)', contact:'Jacob\'s Commercial Building', contactUrl:'https://www.facebook.com/profile.php?id=61585350904444', booking:'', bookingUrl:''},
+  {id:'pb33', area:'Minglanilla', name:'Around the Post', type:'Outdoor', courts:'2', location:'Sitio Tabay, Brgy. Tunghaan, Minglanilla, Cebu', barangay:'Tunghaan', rates:'₱300/hr (4pm-12mn)', contact:'Around the Post', contactUrl:'https://www.facebook.com/profile.php?id=61574262912809', booking:'', bookingUrl:''},
+  {id:'pb34', area:'Minglanilla', name:'SLT Court', type:'Outdoor', courts:'1', location:'Kingswood Village, Tupas St., Brgy. Lipata, Minglanilla, Cebu', barangay:'Lipata', rates:'₱300/hr (6am-4pm); ₱350/hr (4pm-12mn)', contact:'SLT Court', contactUrl:'https://www.facebook.com/profile.php?id=61587707820066', booking:'BOOK HERE', bookingUrl:'https://book.insta-courts.com/courts/slt-court'},
+  {id:'pb35', area:'Minglanilla', name:'Pals\' Pickleball Court', type:'Indoor', courts:'2', location:'18 De Julio Street, Brgy. Poblacion Ward III, Minglanilla, Cebu', barangay:'Poblacion Ward III', rates:'₱300/hr (9am-3pm); ₱350/hr (3pm-11pm)', contact:'Pals\' Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61585933167646', booking:'', bookingUrl:''},
+  {id:'pb36', area:'Minglanilla', name:'Paddle Smashers District', type:'Outdoor', courts:'3', location:'Atyang, Brgy. Linao-Lipata, Minglanilla, Cebu', barangay:'Linao-Lipata', rates:'₱250/hr (6am-3pm); ₱300/hr (3pm-6am)', contact:'Paddle Smashers District', contactUrl:'https://www.facebook.com/profile.php?id=61563108596124', booking:'', bookingUrl:''},
+  {id:'pb37', area:'Minglanilla', name:'PARQLINKS Pickleball Court', type:'Outdoor', courts:'3', location:'A. Apostol St., Lower Calajo-an, Minglanilla, Cebu', barangay:'Calajo-an', rates:'₱350/hr (10am-12mn)', contact:'Links Cafe', contactUrl:'https://www.facebook.com/linkscafeph', booking:'', bookingUrl:''},
+  {id:'pb38', area:'Minglanilla', name:'Active Yard', type:'Covered', courts:'2', location:'Sitio Nazareth, Purok Katambak, Brgy. Tungkop, Minglanilla, Cebu', barangay:'Tungkop', rates:'₱350/hr (6am-5pm); ₱400/hr (5pm-11pm)', contact:'Active Yard', contactUrl:'https://www.facebook.com/profile.php?id=61590067664193', booking:'', bookingUrl:''},
+  {id:'pb39', area:'Minglanilla', name:'Ulrak Pickleball Hub - Minglanilla', type:'Indoor', courts:'2', location:'Anjo World Theme Park, Upper Belmont One, Brgy. Calajo-an, Minglanilla, Cebu.', barangay:'Calajo-an', rates:'₱500/hr (8am-12mn); ₱150/hr OPEN PLAY', contact:'Ulrak Pickleball Hub', contactUrl:'https://www.facebook.com/profile.php?id=61583904333192', booking:'BOOK HERE', bookingUrl:'https://adtokart.com/en/pickleball-selection'},
+  {id:'pb40', area:'Minglanilla', name:'The Pickle Pod', type:'Indoor', courts:'2', location:'Villa Rammelyn Garden and Resort, M. Selma St., Lower Calajoan, Minglanilla, Cebu', barangay:'Calajo-an', rates:'₱500/hr (9am-1am) weekend rates', contact:'The Pickle Pod', contactUrl:'https://www.facebook.com/profile.php?id=61584861323516', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/the-pickle-pod'},
+  {id:'pb41', area:'City of Naga', name:'City of Naga Boardwalk', type:'Outdoor', courts:'2', location:'City of Naga Board Walk, Brgy. East Poblacion, City of Naga, Cebu', barangay:'East Poblacion', rates:'FREE (6am-9pm)', contact:'WALK-IN', contactUrl:'', booking:'', bookingUrl:''},
+  {id:'pb42', area:'City of Naga', name:'Wolfpax HQ Pickleball Court', type:'Indoor', courts:'1', location:'Brgy. Tinaan, City of Naga, Cebu (check "Wolfpax HQ" on Google Maps for accurate location)', barangay:'Tinaan', rates:'₱200/hr (7am-4pm); ₱250/hr (4pm-11pm)', contact:'Wolfpax HQ', contactUrl:'https://www.facebook.com/wolfpaxhq', booking:'BOOK HERE', bookingUrl:'https://primebooker.teknosprint.com/embed/form/wolfpax'},
+  {id:'pb43', area:'City of Naga', name:'Pickle Peak', type:'Outdoor', courts:'2', location:'Little Baguio, Brgy. Inayagan, City of Naga Cebu (Skina Inayagan near Old Barangay Hall)', barangay:'Inayagan', rates:'₱250/hr (5pm-5am)', contact:'Pickle Peak', contactUrl:'https://www.facebook.com/CianLynxPicklePeak', booking:'', bookingUrl:''},
+  {id:'pb44', area:'City of Naga', name:'Sunset Volley Pickleball', type:'Outdoor', courts:'3', location:'Balili, Brgy. Tinaan, City of Naga, Cebu', barangay:'Tinaan', rates:'₱250/hr (6am-4pm); ₱300/hr (4pm-12mn)', contact:'Sunset Volley Pickleball', contactUrl:'https://www.facebook.com/Sunsetvolleypickleball', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/sunset-volley-pickleball'},
+  {id:'pb45', area:'City of Naga', name:'Alferez Pickleball Hub', type:'Outdoor', courts:'4', location:'Alferez Beach Resort, Oceanside Village, Brgy. South Poblacion, City of Naga, Cebu', barangay:'South Poblacion', rates:'₱300/hr (4am-8am) and (3pm-12mn)', contact:'Alferez Pickleball Hub', contactUrl:'https://www.facebook.com/profile.php?id=61589825984573', booking:'', bookingUrl:''},
+  {id:'pb46', area:'City of Naga', name:'Spinix', type:'Outdoor', courts:'1', location:'Tapon 3, Brgy. Tinaan, City of Naga, Cebu', barangay:'Tinaan', rates:'₱300/hr (1am-5pm); ₱350/hr (5pm-12mn)', contact:'Spinix', contactUrl:'https://www.facebook.com/profile.php?id=61566249314908', booking:'', bookingUrl:''},
+  {id:'pb47', area:'City of Naga', name:'DA\'Pickle CLAN', type:'Outdoor', courts:'1', location:'Daclan Compound, Brgy. Tuyan, City of Naga Cebu (Beside Seaoil- Gas Station Tuyan)', barangay:'Tuyan', rates:'₱300-350/hr (6am-3pm); ₱350-400/hr (3pm-12mn)', contact:'DA\'Pickle CLAN', contactUrl:'https://www.facebook.com/profile.php?id=61589355868905', booking:'BOOK HERE', bookingUrl:'https://sureserve.app/book/DAPICKLECLAN'},
+  {id:'pb48', area:'City of Naga', name:'Cebu Pickle Club', type:'Indoor', courts:'6', location:'Lot 20, Uling Rd., Brgy. Pangdan, City of Naga, Cebu', barangay:'Pangdan', rates:'₱400/hr (6am-4pm); ₱500/hr (4pm-1am)', contact:'Cebu Pickle Club', contactUrl:'https://www.facebook.com/profile.php?id=61582421174615', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/cebu-pickle-club'},
+  {id:'pb49', area:'Cebu City', name:'APM Prime (Mall)', type:'Indoor', courts:'1', location:'A. Soriano Avenue, Brgy. Mabolo, Cebu City (across SM City Cebu)', barangay:'Mabolo', rates:'FREE (10am-12mn) 1-2 hours per session', contact:'APM Prime', contactUrl:'https://www.facebook.com/aprimemall', booking:'Contact for Reservation # 09255030086', bookingUrl:''},
+  {id:'pb50', area:'Cebu City', name:'Newtown Estate Subdivision', type:'Outdoor', courts:'1-3', location:'Newtown Estate Subdivision, Brgy. Bulacao Pardo, Cebu City', barangay:'Bulacao', rates:'₱100-125/hr OPEN PLAY (6pm-9pm)', contact:'Check Reclub for Openplay just search "Newtown"', contactUrl:'', booking:'', bookingUrl:''},
+  {id:'pb51', area:'Cebu City', name:'Sayson\'s Place', type:'Covered', courts:'1', location:'Sayson\'s Place, Naya Village, 2nd Street, Tisa, Cebu City', barangay:'Tisa', rates:'₱200/hr (6am-5pm); ₱300/hr (5pm-12mn)', contact:'Contact # 09190656055 (Venus)', contactUrl:'', booking:'', bookingUrl:''},
+  {id:'pb52', area:'Cebu City', name:'Metro Park Hotel', type:'Indoor', courts:'2', location:'Saint Lawrence St., La Guardia, Brgy. Lahug, Cebu City, Cebu', barangay:'Lahug', rates:'₱250/hr (5am-1am) soft opening rates', contact:'Metro Park Hotel', contactUrl:'https://www.facebook.com/metroparkhotel', booking:'Contact # 09088116745', bookingUrl:''},
+  {id:'pb53', area:'Cebu City', name:'Ralhdakz Pickleball', type:'Outdoor', courts:'1', location:'E.Sabellano, Brgy. Quiot Pardo, Cebu City, Cebu (Across Rainbow Connection School)', barangay:'Quiot', rates:'₱250-300/hr (5am-12mn)', contact:'Ralhdakz Pickleball', contactUrl:'https://www.facebook.com/profile.php?id=61570810793192', booking:'', bookingUrl:''},
+  {id:'pb54', area:'Cebu City', name:'BSP Pickleball', type:'Outdoor', courts:'1', location:'BSP, Capitol Hills Scout Camp, Brgy. Lahug, Cebu City, Cebu', barangay:'Lahug', rates:'₱250/hr (6am-8am) and (3pm-12mn)', contact:'BSP Pickleball', contactUrl:'https://www.facebook.com/profile.php?id=61562977535865', booking:'', bookingUrl:''},
+  {id:'pb55', area:'Cebu City', name:'Just Dink\'d Pickleball', type:'Outdoor', courts:'1', location:'Quarter St., Horseshoe Hills, Brgy. Banawa, Cebu City, Cebu', barangay:'Banawa', rates:'₱200/hr (10am-5pm); ₱300/hr (5pm-10pm)', contact:'Just Dink\'d Pickleball', contactUrl:'https://www.facebook.com/profile.php?id=61589861455054', booking:'BOOK HERE', bookingUrl:'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3SmEu6odQ2n5XLZNNgUZVgVPkPD3VtiWcih9LoVy03ZyWx8z1wLWkou2PTDez7Z0trTrEJJwz9'},
+  {id:'pb56', area:'Cebu City', name:'Sip & Serve', type:'Covered', courts:'2', location:'Upper Genes Compound, Brgy. Quiot Pardo, Cebu City, Cebu', barangay:'Quiot', rates:'₱250-450/hr (7am-12mn)', contact:'Sip & Serve', contactUrl:'https://www.facebook.com/profile.php?id=61579062813906', booking:'BOOK HERE', bookingUrl:'https://sipnserve.net/'},
+  {id:'pb57', area:'Cebu City', name:'Metro Sports Center', type:'Outdoor', courts:'3', location:'Salinas Drive, Brgy. Lahug, Cebu City, Cebu', barangay:'Lahug', rates:'₱200/hr (8am-3pm); ₱500/hr (3pm-10pm)', contact:'Metro Sports Center', contactUrl:'https://www.facebook.com/metrosportsfitnesscenter', booking:'', bookingUrl:''},
+  {id:'pb58', area:'Cebu City', name:'Dink at Gracelle\'s (Rooftop)', type:'Covered', courts:'1', location:'530 Peace Valley Homes, Brgy. Bulacao, Cebu City, Cebu (At the back of Prince Warehouse)', barangay:'Bulacao', rates:'₱250/hr (7am-4pm); ₱300/hr (4am-10pm)', contact:'Dink at Gracelle\'s', contactUrl:'https://www.facebook.com/profile.php?id=61589465722160', booking:'', bookingUrl:''},
+  {id:'pb59', area:'Cebu City', name:'SOotK Pickleball Hub (Stay Out of the Kitchen!)', type:'Outdoor', courts:'3', location:'Siakoy Street, Brgy. Lahug, Cebu City, Cebu (Inside Regie\'s Lechon House)', barangay:'Lahug', rates:'₱250-400/hr (4:30pm-12:30mn)', contact:'SOotK Pickleball Hub', contactUrl:'https://www.facebook.com/profile.php?id=61590346576835', booking:'', bookingUrl:''},
+  {id:'pb60', area:'Cebu City', name:'Sage Pickleball Court', type:'Covered', courts:'1', location:'Sage Prep Schoolhouse, Extension, Salinas Dr, Brgy. Lahug, Cebu City, 6000 Cebu', barangay:'Lahug', rates:'₱300/hr (7am-10pm)', contact:'Sage Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61588158346451', booking:'BOOK HERE', bookingUrl:'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3HYeDUwYQas9VeKr_xccMk5fF86Uo79U6MQ3DAaqAzuD3a-qLy7aRzculpnHUSC8EaO4zVehCN'},
+  {id:'pb61', area:'Cebu City', name:'After Five Pickleball', type:'Outdoor', courts:'2', location:'Piazza Elesia, Brgy. Talamban, Cebu City, Cebu', barangay:'Talamban', rates:'₱300/hr (6pm-12mn)', contact:'After Five Pickleball', contactUrl:'https://www.facebook.com/profile.php?id=61589548015870', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/after-five-pickleball'},
+  {id:'pb62', area:'Cebu City', name:'Let\'s Pickle ball (Mall)', type:'Indoor', courts:'1-3', location:'City Mall, 2nd Floor, N. Bacalso St., Brgy. Pahina Central, Cebu City, Cebu', barangay:'Pahina Central', rates:'₱300/hr (10am-8pm)', contact:'Let\'s Pickle Ball', contactUrl:'https://www.facebook.com/profile.php?id=61589111948513', booking:'Contact # 09066008350 (RJ)', bookingUrl:''},
+  {id:'pb63', area:'Cebu City', name:'GJ Paddle Clvb a.k.a Pickleclub', type:'Outdoor', courts:'1', location:'826 Bayabas, Brgy. Mambaling, Cebu City, Cebu', barangay:'Mambaling', rates:'₱300-350/hr (6am-11pm)', contact:'GJ Paddle Clvb', contactUrl:'https://www.facebook.com/profile.php?id=61572161143086', booking:'BOOK HERE', bookingUrl:'https://www.hitsnmisses.com/venues/gj-paddle-club'},
+  {id:'pb64', area:'Cebu City', name:'Qusina', type:'Outdoor', courts:'2', location:'113 Gov. M. Cuenco Ave., Brgy. Banilad, Cebu City, Cebu (Beside Banilad Elementary School)', barangay:'Banilad', rates:'₱300/hr (6am-4pm); ₱500/hr (4pm-6am)', contact:'Qusina', contactUrl:'https://www.facebook.com/profile.php?id=100080588204828', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/qusina-piqle-qlub'},
+  {id:'pb65', area:'Cebu City', name:'Your Neighborhood Court', type:'Indoor', courts:'1', location:'Tres De Abril, Brgy. Labangon, Cebu City, Cebu (Across CIT-U Backgate)', barangay:'Labangon', rates:'₱350/hr (6am-2am) soft opening rates', contact:'Your Neighborhood Court', contactUrl:'https://www.facebook.com/profile.php?id=100064016113011', booking:'', bookingUrl:''},
+  {id:'pb66', area:'Cebu City', name:'Northview Pickleball', type:'Covered', courts:'4', location:'Lower Bacayan, Brgy. Talamban, Cebu City, Cebu', barangay:'Talamban', rates:'₱350/hr (6pm-11pm)', contact:'', contactUrl:'', booking:'BOOK HERE', bookingUrl:'https://book.insta-courts.com/venues/northview-pickleball'},
+  {id:'pb67', area:'Cebu City', name:'Thetopfloorpicklrs (Rooftop)', type:'Covered', courts:'1', location:'Mountainview, Bgry. Quiot Pardo, Cebu City, Cebu (Backgate of USJR)', barangay:'Quiot', rates:'₱350/hr (10am-9pm)', contact:'The Top Floor Picklers', contactUrl:'https://www.facebook.com/profile.php?id=61589181699900', booking:'Direct Contact', bookingUrl:'https://www.facebook.com/Keployy'},
+  {id:'pb68', area:'Cebu City', name:'SouthCourt Paddle (Mall)', type:'Indoor', courts:'5', location:'IL Corso Filinvest Malls, Citi De Mare, South Road Properties (SRP), Brgy. Mambaling, Cebu City, Cebu', barangay:'Mambaling', rates:'₱380/hr (8am-11pm)', contact:'SouthCourt Paddle', contactUrl:'https://www.facebook.com/profile.php?id=61576416510530', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/southcourt-paddle'},
+  {id:'pb69', area:'Cebu City', name:'Friendship Point', type:'Outdoor', courts:'1', location:'16, Friendship Village, Brgy. Basak San Nicolas, Cebu City', barangay:'Basak', rates:'₱350/hr (5am-4pm); ₱450/hr (4pm-12mn)', contact:'Friendship Point', contactUrl:'https://www.facebook.com/profile.php?id=61590356645645', booking:'BOOK HERE', bookingUrl:'https://friendshippointcebu.com/'},
+  {id:'pb70', area:'Cebu City', name:'Dink N\' Lob', type:'Outdoor', courts:'3', location:'D\'Hive Arcade, 343 F. Jaca St., Brgy. Inayawan, Cebu City, Cebu', barangay:'Inayawan', rates:'₱350/hr (6am-6pm); ₱450/hr (6pm-12mn)', contact:'Dink N\' Lob', contactUrl:'https://www.facebook.com/profile.php?id=61587132731797', booking:'', bookingUrl:''},
+  {id:'pb71', area:'Cebu City', name:'Citiloft', type:'Indoor', courts:'2', location:'Citiloft Condominium, 21a General Maxilom Ave, Cebu City, Cebu (Near DOLE)', barangay:'Kasambagan', rates:'₱350/hr (8am-10am); ₱550/hr (10am-9pm)', contact:'Contact # 09542269782', contactUrl:'', booking:'', bookingUrl:''},
+  {id:'pb72', area:'Cebu City', name:'Pickle Pop', type:'Covered', courts:'1', location:'529a Natalio B. Bacalso Ave, Brgy. Kinasang-an Pardo, Cebu City, Cebu (Near Mandaue Foam -Pardo Branch)', barangay:'Pardo', rates:'₱400-500/hr (6am-12mn)', contact:'Pickle Pop', contactUrl:'https://www.facebook.com/profile.php?id=61589470268592', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/pickle-pop-cebu'},
+  {id:'pb73', area:'Cebu City', name:'Crown Hoops', type:'Indoor', courts:'1-3', location:'191, L. Gabuya Street, Tagunol, Brgy. Cogon Pardo, Cebu City', barangay:'Pardo', rates:'₱400/ hr (6am-1am)', contact:'Crown Hoops', contactUrl:'https://www.facebook.com/crownhoopscebu', booking:'', bookingUrl:''},
+  {id:'pb74', area:'Cebu City', name:'Prime Rally PH', type:'Covered', courts:'6', location:'1221 L. Gabuya St, Brgy. Cogon Pardo, Cebu City,Cebu', barangay:'Pardo', rates:'₱400/hr (10am-5pm); ₱500/hr (5pm-1am)', contact:'Prime Rally PH', contactUrl:'https://www.facebook.com/profile.php?id=61583769670357', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/prime-rally-ph-pickleball-court'},
+  {id:'pb75', area:'Cebu City', name:'Archangel Pickleball Center', type:'Indoor', courts:'3', location:'Gualandi Mission for the Deaf School, St. Michael\'s Village, Brgy. Kasambagan, Cebu City', barangay:'Kasambagan', rates:'₱400/hr (8am-9pm)', contact:'Archangel Pickleball Center', contactUrl:'https://www.facebook.com/profile.php?id=61579980714348', booking:'', bookingUrl:''},
+  {id:'pb76', area:'Cebu City', name:'The Reactor Cebu - Pickleball', type:'Covered', courts:'1', location:'137 E Sabellano Street, Sitio Camansi, Brgy. Quiot Pardo, Cebu City, Cebu', barangay:'Quiot', rates:'₱400/hr (8am-10pm) weekend rates', contact:'The Reactor Cebu', contactUrl:'https://www.facebook.com/groups/1247467082891020/user/100066644973094/', booking:'', bookingUrl:''},
+  {id:'pb77', area:'Cebu City', name:'Outlook Cafe', type:'Outdoor', courts:'1', location:'Dungawan Restaurant, Parking lot, Brgy. Tisa, Cebu City, Cebu', barangay:'Tisa', rates:'₱400-500/hr (3pm-3am)', contact:'Outlook Cafe', contactUrl:'https://www.facebook.com/outlookplay', booking:'BOOK HERE', bookingUrl:'https://outlookplay.com/'},
+  {id:'pb78', area:'Cebu City', name:'Homecourt Cebu', type:'Indoor', courts:'1', location:'2353 Santol St, Brgy. Banawa, Cebu City, Cebu', barangay:'Banawa', rates:'₱400-450/hr (8am-4pm); ₱450/hr (4pm-10pm)', contact:'Homecourt Cebu', contactUrl:'https://www.facebook.com/profile.php?id=100091341927925', booking:'', bookingUrl:''},
+  {id:'pb79', area:'Cebu City', name:'Linkers Pickleball Court', type:'Covered', courts:'', location:'Childlink Learning Center, Zodiacville, Englis V. Rama Avenue, Brgy. Guadalupe, Cebu City, Cebu', barangay:'Guadalupe', rates:'₱450/hr (7am-10pm)', contact:'Linkers Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61564986929389', booking:'BOOK HERE', bookingUrl:'https://sites.google.com/view/linkers-pickleball-court/home'},
+  {id:'pb80', area:'Cebu City', name:'Nomads Pickleball', type:'Indoor', courts:'2', location:'070 R. Duterte St., Brgy. Banawa, Cebu City, Cebu', barangay:'Banawa', rates:'₱450/hr (24/7-weekdays); ₱500/hr (24/7-weekends)', contact:'Nomads Pickleball', contactUrl:'https://www.facebook.com/nomadspickleball', booking:'BOOK HERE', bookingUrl:'https://nomadspickleball.com/'},
+  {id:'pb81', area:'Cebu City', name:'Andot Pickle Court', type:'Covered', courts:'2', location:'38-B Jade St., Buena Hills, Brgy. Guadalupe, Cebu City', barangay:'Guadalupe', rates:'₱450/hr (6am-3pm); ₱500/hr (3pm-12mn/weekend)', contact:'Andot Pickle Court', contactUrl:'https://www.facebook.com/andotPICKLEcourt', booking:'BOOK HERE', bookingUrl:'https://book.insta-courts.com/venues/andot-picklecourt'},
+  {id:'pb82', area:'Cebu City', name:'ULRAK Pickleball Hub Tambayan District', type:'Indoor', courts:'8', location:'Tambayan District, Bulacao Pardo, Cebu City, Cebu', barangay:'Bulacao', rates:'₱500/hr (6am-4am)', contact:'Ulrak Pickleball Hub', contactUrl:'https://www.facebook.com/profile.php?id=61583904333192', booking:'Download "CARVITO" App', bookingUrl:''},
+  {id:'pb83', area:'Cebu City', name:'Magnum Sports Complex', type:'Indoor', courts:'4', location:'San Miguel Road, Brgy. Apas, Cebu City, Cebu (Near Cebu IT Park)', barangay:'Apas', rates:'₱500/hr (6am-1am) weekend rates', contact:'Magnum Sports Complex', contactUrl:'https://www.facebook.com/profile.php?id=61574882055158', booking:'BOOK HERE', bookingUrl:'https://magnumsportscomplex.com/'},
+  {id:'pb84', area:'Cebu City', name:'Pino Pickleball Court', type:'Outdoor', courts:'9', location:'ML Lifestyle Park - Sports & Food Park, San Jose Road, Brgy. Talamban, Cebu City, Cebu', barangay:'Talamban', rates:'₱500/hr (4pm-12am)', contact:'Contact # 09397842901', contactUrl:'', booking:'BOOK HERE', bookingUrl:'https://webpos.lavielifestyle.ph/public/availability/'},
+  {id:'pb85', area:'Cebu City', name:'Paddlestack Pickleball Courts', type:'Covered', courts:'4', location:'Lahug-Guadalupe Road, A. Villalon Drv, Cebu City, Cebu (Near Capitol Site)', barangay:'Capitol Site', rates:'₱500/hr (8am-3pm); ₱550/hr (3pm-12mn)', contact:'Paddlestack', contactUrl:'https://www.facebook.com/profile.php?id=61572129029391', booking:'BOOK HERE', bookingUrl:'https://paddlestack.pages.dev/'},
+  {id:'pb86', area:'Cebu City', name:'Dinkin\' Park Cebu', type:'Covered', courts:'2', location:'Grand Orchard South Building, Cebu South Road, Basak, Cebu City, Cebu', barangay:'Basak', rates:'₱550/hr (6am-3am) weekend/soft opening rates', contact:'Dinkin Park', contactUrl:'https://www.facebook.com/profile.php?id=61586717206182', booking:'BOOK HERE', bookingUrl:'https://dinkinparkcebu.com/'},
+  {id:'pb87', area:'Cebu City', name:'Velocity Pickleball Hub', type:'Covered', courts:'3', location:'Beside QC Pavilion, Gorordo Ave, Brgy. Kamputhaw, Cebu City, Cebu', barangay:'Kamputhaw', rates:'₱550/hr (7am-4pm); ₱600/hr (4pm-12mn)', contact:'Velocity Pickleball Hub', contactUrl:'https://www.facebook.com/velocitypickleballhub/', booking:'BOOK HERE', bookingUrl:'https://www.velocitypickleballcebu.com/'},
+  {id:'pb88', area:'Cebu City', name:'The Courts of Cebu', type:'Covered', courts:'1-7', location:'President Magsaysay St., Brgy. Kasambagan, Cebu City, Cebu', barangay:'Kasambagan', rates:'Community: ₱550/hr; Tita/Tito: ₱700/hr (10am-10pm)', contact:'The Courts of Cebu Instagram', contactUrl:'https://www.instagram.com/thecourts.ceb', booking:'BOOK HERE', bookingUrl:'https://app.onda.fit/book/the-courts-of-cebu'},
+  {id:'pb89', area:'Cebu City', name:'Net and Paddle', type:'Indoor', courts:'1-7', location:'101 Tupas St., Brgy. Sawang Calero, Cebu City, Cebu', barangay:'Sawang Calero', rates:'Championship: ₱550-650/hr; Regular: ₱500-600/hr (8am-12mn)', contact:'Net and Paddle', contactUrl:'https://www.facebook.com/profile.php?id=61583023538508', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/net-and-paddle-pickleball-club'},
+  {id:'pb90', area:'Cebu City', name:'Stomping Ground Cebu', type:'Covered', courts:'1', location:'21 Pres. Roxas Street., Brgy. Kasambagan, Cebu City, Cebu (Beside Castle Peak)', barangay:'Kasambagan', rates:'₱500/hr (8am-12pm); ₱700/hr (12pm-9pm) weekend rates', contact:'Stomping Ground Cebu', contactUrl:'https://www.facebook.com/stompinggroundcebu', booking:'BOOK HERE', bookingUrl:'https://stomping-grounds-ph.web.app/'},
+  {id:'pb91', area:'Cebu City', name:'88th Avenue Cebu', type:'Outdoor', courts:'2', location:'88th Pickleclub, 88th Avenue, Gov. M. Cuenco, Brgy. Banilad, Cebu City, Cebu', barangay:'Banilad', rates:'₱500/hr (6am-4pm); ₱800/hr (4pm-12mn)', contact:'88th Avenue Cebu', contactUrl:'https://www.facebook.com/88thavenuecebu', booking:'BOOK HERE', bookingUrl:'https://www.88thpickleclub.ph/'},
+  {id:'pb92', area:'Cebu City', name:'HQ Pickleball Court', type:'Covered', courts:'8', location:'Grand Convention Center of Cebu, Archbishop Reyes Ave, Brgy. Luz, Cebu City, Cebu', barangay:'Luz', rates:'₱600/hr (24/7)', contact:'HQ Pickleball Court', contactUrl:'https://www.facebook.com/profile.php?id=61585259447279', booking:'BOOK HERE', bookingUrl:'https://app.sports360.ph/sportshub/hq-pickleball-cebu'},
+  {id:'pb93', area:'Cebu City', name:'Piknik Premier Pickleball', type:'Indoor', courts:'2', location:'A. Abellana Ext., Brgy. Guadalupe, Cebu City, Cebu', barangay:'Guadalupe', rates:'₱600/hr (8am-4pm); ₱650/hr (4pm-8am)', contact:'Piknik Premier Pickleball', contactUrl:'https://www.facebook.com/profile.php?id=61575394473378', booking:'', bookingUrl:''},
+  {id:'pb94', area:'Cebu City', name:'Thirsty Pickle', type:'Covered', courts:'7', location:'Mountain Wing (infront), SM Seaside Cebu, Brgy. Mambaling, Cebu City, Cebu', barangay:'Mambaling', rates:'₱700/hr (8am-12mn) weekend rates', contact:'Thirsty Pickle', contactUrl:'https://www.facebook.com/thirstypickle', booking:'BOOK HERE', bookingUrl:'https://www.thirstypickle.ph/'},
+  {id:'pb95', area:'Cebu City', name:'DH Sports Hub', type:'Covered', courts:'1', location:'DH Sports Hub, The Crossroads, Banilad Rd, Cebu City, Cebu', barangay:'Banilad', rates:'₱700/hr (6am-5pm); ₱900/hr (5pm-12mn)', contact:'DH Sports Hub', contactUrl:'https://www.facebook.com/profile.php?id=61575038531465', booking:'', bookingUrl:''},
+];
+
+/* ============================== State ============================== */
+let pbLeads = {}; // {[courtId]: {id, status, notes, overrides, updatedAt}}
+let pbCustomCourts = []; // venues added manually via the "+ Add Court" button
+let pbSearch = "";
+let pbAreaFilter = "all";
+let pbFilterStatus = "all";
+
+function pbStatus(courtId){ const l = pbLeads[courtId]; return (l && l.status) || "none"; }
+function pbStatusMeta(key){ return PB_STATUS_OPTIONS.find(o=>o.key===key) || PB_STATUS_OPTIONS[0]; }
+async function setPbStatus(courtId, status){
+  if(!IS_ADMIN) return;
+  const existing = pbLeads[courtId] || {id:courtId, notes:""};
+  const rec = {...existing, id:courtId, status, updatedAt:Date.now()};
+  await put("pbLeads", rec);
+  pbLeads[courtId] = rec;
+}
+async function setPbNotes(courtId, notes){
+  if(!IS_ADMIN) return;
+  const existing = pbLeads[courtId] || {id:courtId, status:"none"};
+  const rec = {...existing, id:courtId, notes:(notes||"").trim(), updatedAt:Date.now()};
+  await put("pbLeads", rec);
+  pbLeads[courtId] = rec;
+}
+function pbAllBaseCourts(){ return [...PICKLEBALL_COURTS, ...pbCustomCourts]; }
+function pbAreas(){ return [...new Set(pbAllBaseCourts().map(c=>c.area))]; }
+function isCustomPbCourt(courtId){ return pbCustomCourts.some(c=>c.id===courtId); }
+function pbCourtData(courtId){
+  const base = pbAllBaseCourts().find(c=>c.id===courtId);
+  if(!base) return null;
+  const lead = pbLeads[courtId];
+  return (lead && lead.overrides) ? {...base, ...lead.overrides} : base;
+}
+async function setPbOverrides(courtId, overrides){
+  if(!IS_ADMIN) return;
+  const existing = pbLeads[courtId] || {id:courtId, status:"none", notes:""};
+  const rec = {...existing, id:courtId, overrides:{...(existing.overrides||{}), ...overrides}, updatedAt:Date.now()};
+  await put("pbLeads", rec);
+  pbLeads[courtId] = rec;
+}
+async function addPbCourt(fields){
+  if(!IS_ADMIN) return null;
+  const rec = {
+    id: "pbc-"+uid(),
+    area: (fields.area||"").trim() || "Other",
+    name: (fields.name||"").trim(),
+    type: (fields.type||"").trim(),
+    courts: (fields.courts||"").trim(),
+    location: (fields.location||"").trim(),
+    barangay: (fields.barangay||"").trim(),
+    rates: (fields.rates||"").trim(),
+    contact: (fields.contact||"").trim(),
+    contactUrl: (fields.contactUrl||"").trim(),
+    booking: (fields.booking||"").trim(),
+    bookingUrl: (fields.bookingUrl||"").trim(),
+    createdAt: Date.now()
+  };
+  await put("pbCustom", rec);
+  pbCustomCourts.push(rec);
+  return rec;
+}
+async function deletePbCourt(courtId){
+  if(!IS_ADMIN) return;
+  await del("pbCustom", courtId);
+  pbCustomCourts = pbCustomCourts.filter(c=>c.id!==courtId);
+  if(pbLeads[courtId]){ await del("pbLeads", courtId); delete pbLeads[courtId]; }
+}
+
+/* ============================== Rendering ============================== */
+function pbTypeColor(type){
+  const t = (type||"").toLowerCase();
+  if(t==="indoor") return COLORS.blue;
+  if(t==="covered") return COLORS.purple;
+  return COLORS.green; // outdoor / default
+}
+
+function renderPbCard(c){
+  const st = pbStatus(c.id);
+  const meta = pbStatusMeta(st);
+  const tc = pbTypeColor(c.type);
+  const isCustom = isCustomPbCourt(c.id);
+  const contactHtml = c.contactUrl
+    ? `<a href="${esc(c.contactUrl)}" target="_blank" rel="noopener">${esc(c.contact||"Contact")}</a>`
+    : `<span>${esc(c.contact||"—")}</span>`;
+  const bookingHtml = c.booking
+    ? (c.bookingUrl
+        ? `<div class="pb-card-row"><span class="pb-card-ico">🔗</span><a href="${esc(c.bookingUrl)}" target="_blank" rel="noopener">${esc(c.booking)}</a></div>`
+        : `<div class="pb-card-row"><span class="pb-card-ico">🔗</span><span>${esc(c.booking)}</span></div>`)
+    : "";
+  const mapsQuery = [c.location, c.barangay, c.area, "Cebu"].filter(Boolean).join(", ");
+  const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapsQuery);
+  const locationHtml = c.location
+    ? `<a href="${esc(mapsUrl)}" target="_blank" rel="noopener">${esc(c.location)}</a>`
+    : `<span>—</span>`;
+  return `<div class="pb-card">
+    <div class="pb-card-head">
+      <div class="flex1">
+        <div class="pb-card-name">${esc(c.name)}</div>
+        <div class="pb-card-area">${esc(c.area)}${c.barangay?" · Brgy. "+esc(c.barangay):""}</div>
+      </div>
+      <span class="pb-type-tag" style="background:${tc.bg};color:${tc.c}">${esc(c.type||"—")}</span>
+      <button class="mini-btn admin-only" data-editpb="${c.id}" title="Edit venue">✎</button>
+      ${isCustom?`<button class="mini-btn admin-only" data-delpb="${c.id}" title="Delete venue">🗑</button>`:""}
+    </div>
+    <div class="pb-card-body">
+      <div class="pb-card-row"><span class="pb-card-ico">📍</span>${locationHtml}</div>
+      <div class="pb-card-row"><span class="pb-card-ico">🏟</span><span>${esc(c.courts||"—")} court(s)</span></div>
+      <div class="pb-card-row"><span class="pb-card-ico">💵</span><span>${esc(c.rates||"—")}</span></div>
+      <div class="pb-card-row"><span class="pb-card-ico">📱</span>${contactHtml}</div>
+      ${bookingHtml}
+    </div>
+    <div class="pb-card-notes">
+      <div class="pb-card-notes-label">Notes</div>
+      <textarea class="pb-notes-textarea admin-editable" data-pbnotes="${c.id}" placeholder="Add internal notes about this venue..." ${IS_ADMIN?"":"readonly"}>${esc((pbLeads[c.id]&&pbLeads[c.id].notes)||"")}</textarea>
+    </div>
+    <div class="pb-card-foot">
+      <select class="pb-status-select admin-editable" data-pbstatus="${c.id}" style="border-color:${meta.color};color:${meta.color};background:${meta.bg}" ${IS_ADMIN?"":"disabled"}>
+        ${PB_STATUS_OPTIONS.map(o=>`<option value="${o.key}" ${o.key===st?"selected":""}>${esc(o.label)}</option>`).join("")}
+      </select>
+    </div>
+  </div>`;
+}
+
+function refreshPbBody(){
+  if(document.getElementById("pbBody")) renderPbBody();
+}
+
+function renderPbBody(){
+  const container = document.getElementById("pbBody");
+  if(!container) return;
+  const q = pbSearch.toLowerCase();
+
+  const allBase = pbAllBaseCourts();
+  const areas = pbAreas();
+  const list = allBase.map(base=>pbCourtData(base.id)).filter(c=>{
+    if(pbAreaFilter!=="all" && c.area!==pbAreaFilter) return false;
+    if(pbFilterStatus!=="all" && pbStatus(c.id)!==pbFilterStatus) return false;
+    if(q && !(`${c.name} ${c.location} ${c.barangay} ${c.area} ${(pbLeads[c.id]&&pbLeads[c.id].notes)||""}`.toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a,b)=>a.name.localeCompare(b.name, undefined, {sensitivity:"base"}));
+
+  const totalVenues = allBase.length;
+  const contactedCount = allBase.filter(c=>pbStatus(c.id)!=="none").length;
+  const clientCount = allBase.filter(c=>pbStatus(c.id)==="client").length;
+  const interestedCount = allBase.filter(c=>pbStatus(c.id)==="interested").length;
+
+  container.innerHTML = `
+    <div class="stat-strip" style="margin-bottom:22px;">
+      <div class="stat-card"><div class="stat-num">${totalVenues}</div><div class="stat-label">Total Venues</div></div>
+      <div class="stat-card"><div class="stat-num">${areas.length}</div><div class="stat-label">Areas Covered</div></div>
+      <div class="stat-card"><div class="stat-num">${contactedCount}</div><div class="stat-label">Outreach Started</div></div>
+      <div class="stat-card"><div class="stat-num">${clientCount}</div><div class="stat-label">Clients</div></div>
+    </div>
+    <div class="dash-toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="pbSearchInput" placeholder="Search venue, barangay, or area..." value="${esc(pbSearch)}">
+      </div>
+      <button class="btn btn-primary admin-only" id="pbAddCourtBtn">+ Add Court</button>
+    </div>
+    <div class="pb-chip-group" id="pbAreaChips">
+      <button class="pb-chip ${pbAreaFilter==='all'?'active':''}" data-area="all">All Areas (${totalVenues})</button>
+      ${areas.map(a=>{
+        const n = allBase.filter(c=>c.area===a).length;
+        return `<button class="pb-chip ${pbAreaFilter===a?'active':''}" data-area="${esc(a)}">${esc(a)} (${n})</button>`;
+      }).join("")}
+    </div>
+    <div class="pb-chip-group" id="pbStatusChips" style="margin-bottom:18px;">
+      <button class="pb-chip ${pbFilterStatus==='all'?'active':''}" data-status="all">All Statuses</button>
+      ${PB_STATUS_OPTIONS.map(o=>`<button class="pb-chip ${pbFilterStatus===o.key?'active':''}" data-status="${o.key}" style="${pbFilterStatus===o.key?`background:${o.bg};color:${o.color};border-color:${o.color};`:""}">${esc(o.label)}</button>`).join("")}
+    </div>
+    <div class="pb-summary">${list.length} of ${totalVenues} venue${totalVenues===1?"":"s"} shown${interestedCount?` · ${interestedCount} marked Interested`:""}</div>
+    <div class="pb-list">
+      ${list.length ? list.map(c=>renderPbCard(c)).join("") : `<div class="dash-empty">No venues match your filters.</div>`}
+    </div>
+  `;
+
+  const searchEl = document.getElementById("pbSearchInput");
+  searchEl.addEventListener("input", e=>{ pbSearch = e.target.value; renderPbBody(); });
+  if(pbSearch){ searchEl.focus(); searchEl.setSelectionRange(pbSearch.length, pbSearch.length); }
+
+  document.getElementById("pbAddCourtBtn").addEventListener("click", ()=>{ openAddPbModal(refreshPbBody); });
+
+  container.querySelectorAll("[data-area]").forEach(btn=>btn.addEventListener("click", ()=>{ pbAreaFilter = btn.dataset.area; renderPbBody(); }));
+  container.querySelectorAll("[data-status]").forEach(btn=>btn.addEventListener("click", ()=>{ pbFilterStatus = btn.dataset.status; renderPbBody(); }));
+  container.querySelectorAll("[data-pbstatus]").forEach(sel=>sel.addEventListener("change", async e=>{
+    const courtId = sel.dataset.pbstatus;
+    const court = pbCourtData(courtId);
+    await setPbStatus(courtId, e.target.value);
+    const meta = pbStatusMeta(e.target.value);
+    sel.style.borderColor = meta.color; sel.style.color = meta.color; sel.style.background = meta.bg;
+    toast(court ? `${court.name} marked "${meta.label}"` : "Status updated");
+  }));
+  container.querySelectorAll("[data-editpb]").forEach(btn=>btn.addEventListener("click", ()=>{
+    openEditPbModal(btn.dataset.editpb, refreshPbBody);
+  }));
+  container.querySelectorAll("[data-delpb]").forEach(btn=>btn.addEventListener("click", async ()=>{
+    const court = pbCourtData(btn.dataset.delpb);
+    if(!confirm(`Delete "${court?court.name:"this venue"}"? This can't be undone.`)) return;
+    await deletePbCourt(btn.dataset.delpb);
+    toast("Venue deleted");
+    renderPbBody();
+  }));
+  container.querySelectorAll("[data-pbnotes]").forEach(ta=>{
+    let debounceTimer;
+    const save = ()=>{ clearTimeout(debounceTimer); setPbNotes(ta.dataset.pbnotes, ta.value); };
+    ta.addEventListener("input", ()=>{ clearTimeout(debounceTimer); debounceTimer = setTimeout(save, 600); });
+    ta.addEventListener("blur", save);
+  });
+}
+
+/* ============================== Modals ============================== */
+function openEditPbModal(courtId, onSaved){
+  if(!IS_ADMIN) return;
+  const c = pbCourtData(courtId); if(!c) return;
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "edit-pb";
+  box.style.width = "460px";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Edit Venue</h3>
+    <div class="cust-form" style="margin-top:0;padding-top:0;border-top:none;">
+      <input type="text" id="editPbArea" placeholder="Area (e.g. Talisay City) *" value="${esc(c.area)}">
+      <input type="text" id="editPbName" placeholder="Venue name *" value="${esc(c.name)}">
+      <div class="cust-form-row">
+        <input type="text" id="editPbType" placeholder="Court type (Outdoor/Indoor/Covered)" value="${esc(c.type||"")}">
+        <input type="text" id="editPbCourts" placeholder="# of courts" value="${esc(c.courts||"")}">
+      </div>
+      <input type="text" id="editPbLocation" placeholder="Location" value="${esc(c.location||"")}">
+      <input type="text" id="editPbBarangay" placeholder="Barangay" value="${esc(c.barangay||"")}">
+      <input type="text" id="editPbRates" placeholder="Rates" value="${esc(c.rates||"")}">
+      <input type="text" id="editPbContact" placeholder="Contact (name shown on card)" value="${esc(c.contact||"")}">
+      <input type="text" id="editPbContactUrl" placeholder="Contact link (Facebook / Messenger / IG URL, optional)" value="${esc(c.contactUrl||"")}">
+      <input type="text" id="editPbBooking" placeholder="Booking label (e.g. BOOK HERE)" value="${esc(c.booking||"")}">
+      <input type="text" id="editPbBookingUrl" placeholder="Booking link URL (optional)" value="${esc(c.bookingUrl||"")}">
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" id="editPbCancel">Cancel</button>
+      <button class="btn btn-primary" id="editPbSave">Save changes</button>
+    </div>
+  `;
+  overlay.classList.add("show");
+  const nameEl = document.getElementById("editPbName");
+  nameEl.focus();
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("editPbCancel").onclick = closeModal;
+  const save = async ()=>{
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    await setPbOverrides(courtId, {
+      area: document.getElementById("editPbArea").value.trim() || c.area,
+      name,
+      type: document.getElementById("editPbType").value.trim(),
+      courts: document.getElementById("editPbCourts").value.trim(),
+      location: document.getElementById("editPbLocation").value.trim(),
+      barangay: document.getElementById("editPbBarangay").value.trim(),
+      rates: document.getElementById("editPbRates").value.trim(),
+      contact: document.getElementById("editPbContact").value.trim(),
+      contactUrl: document.getElementById("editPbContactUrl").value.trim(),
+      booking: document.getElementById("editPbBooking").value.trim(),
+      bookingUrl: document.getElementById("editPbBookingUrl").value.trim()
+    });
+    toast("Venue updated");
+    closeModal();
+    if(onSaved) onSaved();
+  };
+  document.getElementById("editPbSave").onclick = save;
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("keydown", e=>{ if(e.key==="Enter") save(); }));
+}
+
+function openAddPbModal(onSaved){
+  if(!IS_ADMIN) return;
+  const overlay = document.getElementById("modalOverlay");
+  const box = document.getElementById("modalBox");
+  box.dataset.mode = "add-pb";
+  box.style.width = "460px";
+  box.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <h3>Add Venue</h3>
+    <div class="cust-form" style="margin-top:0;padding-top:0;border-top:none;">
+      <select id="addPbAreaSelect">
+        ${pbAreas().map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join("")}
+        <option value="__new__">+ Add new area…</option>
+      </select>
+      <input type="text" id="addPbAreaNew" placeholder="New area name *" style="display:none;">
+      <input type="text" id="addPbName" placeholder="Venue name *">
+      <div class="cust-form-row">
+        <input type="text" id="addPbType" placeholder="Court type (Outdoor/Indoor/Covered)">
+        <input type="text" id="addPbCourts" placeholder="# of courts">
+      </div>
+      <input type="text" id="addPbLocation" placeholder="Location">
+      <input type="text" id="addPbBarangay" placeholder="Barangay">
+      <input type="text" id="addPbRates" placeholder="Rates">
+      <input type="text" id="addPbContact" placeholder="Contact (name shown on card)">
+      <input type="text" id="addPbContactUrl" placeholder="Contact link (Facebook / Messenger / IG URL, optional)">
+      <input type="text" id="addPbBooking" placeholder="Booking label (e.g. BOOK HERE)">
+      <input type="text" id="addPbBookingUrl" placeholder="Booking link URL (optional)">
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" id="addPbCancel">Cancel</button>
+      <button class="btn btn-primary" id="addPbSave">Add venue</button>
+    </div>
+  `;
+  overlay.classList.add("show");
+  const areaSelectEl = document.getElementById("addPbAreaSelect");
+  const areaNewEl = document.getElementById("addPbAreaNew");
+  const nameEl = document.getElementById("addPbName");
+  areaSelectEl.focus();
+  const useNewArea = ()=>{
+    areaSelectEl.style.display = "none";
+    areaNewEl.style.display = "block";
+    areaNewEl.focus();
+  };
+  areaSelectEl.addEventListener("change", ()=>{
+    if(areaSelectEl.value === "__new__") useNewArea();
+  });
+  document.getElementById("modalCloseBtn").onclick = closeModal;
+  document.getElementById("addPbCancel").onclick = closeModal;
+  const save = async ()=>{
+    const usingNew = areaNewEl.style.display !== "none";
+    const area = usingNew ? areaNewEl.value.trim() : areaSelectEl.value.trim();
+    const name = nameEl.value.trim();
+    if(!area){ (usingNew?areaNewEl:areaSelectEl).focus(); return; }
+    if(!name){ nameEl.focus(); return; }
+    const rec = await addPbCourt({
+      area, name,
+      type: document.getElementById("addPbType").value,
+      courts: document.getElementById("addPbCourts").value,
+      location: document.getElementById("addPbLocation").value,
+      barangay: document.getElementById("addPbBarangay").value,
+      rates: document.getElementById("addPbRates").value,
+      contact: document.getElementById("addPbContact").value,
+      contactUrl: document.getElementById("addPbContactUrl").value,
+      booking: document.getElementById("addPbBooking").value,
+      bookingUrl: document.getElementById("addPbBookingUrl").value
+    });
+    toast(`"${rec.name}" added`);
+    closeModal();
+    if(onSaved) onSaved();
+  };
+  document.getElementById("addPbSave").onclick = save;
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("keydown", e=>{ if(e.key==="Enter") save(); }));
+}
+
+/* ============================== Page boot ============================== */
+async function initPage(){
+  try{
+    db = await openDB();
+    const pbLeadRows = await getAll("pbLeads");
+    pbLeads = {}; pbLeadRows.forEach(r=>{ pbLeads[r.id] = r; });
+    pbCustomCourts = await getAll("pbCustom");
+  }catch(e){
+    toast("Storage unavailable in this browser context");
+    console.error(e);
+  }
+  renderPbBody();
+}
+
+/* ============================== Auth (Google Sign-In) ============================== */
+/* This page is publicly viewable. Signing in with an allowed Google account unlocks
+   editing (same as the main RallySight dashboard, and stored in the same IndexedDB —
+   changes made here show up there too). This is a UI-level lock, not a security boundary. */
+let IS_ADMIN = false;
+const GOOGLE_CLIENT_ID = "593344772657-ni4h4dregeoncvng1c6u2qsjtg8ri6i0.apps.googleusercontent.com";
+const ALLOWED_EMAILS = ["katrina.sungahid@gmail.com"];
+const AUTH_KEY = "rallysight_auth_session_v1";
+const AUTH_TTL_MS = 30*24*60*60*1000; // 30 days
+
+function getStoredSession(){
+  try{
+    const raw = localStorage.getItem(AUTH_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s.email || !s.ts) return null;
+    if(Date.now() - s.ts > AUTH_TTL_MS) return null;
+    if(!ALLOWED_EMAILS.includes(s.email)) return null;
+    return s;
+  }catch(e){ return null; }
+}
+function storeSession(email, name, picture){
+  localStorage.setItem(AUTH_KEY, JSON.stringify({email, name:name||"", picture:picture||"", ts: Date.now()}));
+}
+function clearSession(){ localStorage.removeItem(AUTH_KEY); }
+
+function showLoginError(msg){
+  const el = document.getElementById("loginError");
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = "block";
+}
+function hideLoginError(){
+  const el = document.getElementById("loginError");
+  if(el) el.style.display = "none";
+}
+
+async function handleCredentialResponse(response){
+  hideLoginError();
+  try{
+    const r = await fetch("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(response.credential));
+    if(!r.ok) throw new Error("verify failed");
+    const payload = await r.json();
+    if(payload.aud !== GOOGLE_CLIENT_ID){
+      showLoginError("Sign-in verification failed. Please try again.");
+      return;
+    }
+    if(payload.email_verified !== "true" && payload.email_verified !== true){
+      showLoginError("Your Google email isn't verified.");
+      return;
+    }
+    if(!ALLOWED_EMAILS.includes(payload.email)){
+      showLoginError(esc(payload.email) + " isn't authorized to edit this dashboard.");
+      if(window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+      return;
+    }
+    storeSession(payload.email, payload.name, payload.picture);
+    location.reload();
+  }catch(e){
+    showLoginError("Couldn't verify your Google account. Check your connection and try again.");
+  }
+}
+
+function openLoginScreen(){
+  const el = document.getElementById("loginScreen");
+  if(el) el.classList.add("show");
+  hideLoginError();
+  renderGoogleButton();
+}
+function closeLoginScreen(){
+  const el = document.getElementById("loginScreen");
+  if(el) el.classList.remove("show");
+}
+
+function enterApp(admin){
+  IS_ADMIN = !!admin;
+  document.body.classList.toggle("is-admin", IS_ADMIN);
+  initPage();
+}
+
+function signOut(){
+  clearSession();
+  if(window.google && google.accounts && google.accounts.id){
+    google.accounts.id.disableAutoSelect();
+  }
+  location.reload();
+}
+
+function renderGoogleButton(){
+  const container = document.getElementById("googleBtnContainer");
+  if(!container) return;
+  if(!(window.google && google.accounts && google.accounts.id)){
+    setTimeout(renderGoogleButton, 300);
+    return;
+  }
+  container.innerHTML = "";
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse
+  });
+  google.accounts.id.renderButton(container, {theme:"outline", size:"large", width:280, text:"signin_with", shape:"pill"});
+}
+
+function boot(){
+  const session = getStoredSession();
+  enterApp(!!session);
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const signOutBtn = document.getElementById("signOutBtn");
+  if(signOutBtn) signOutBtn.addEventListener("click", signOut);
+  const signInBtn = document.getElementById("signInBtn");
+  if(signInBtn) signInBtn.addEventListener("click", openLoginScreen);
+  const loginCloseBtn = document.getElementById("loginCloseBtn");
+  if(loginCloseBtn) loginCloseBtn.addEventListener("click", closeLoginScreen);
+  boot();
+});
+})();
+</script>
+</body>
+</html>
